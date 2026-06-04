@@ -150,6 +150,8 @@ blockquote { margin: 0; border-radius: 28px; padding: 28px; color: var(--cream);
 blockquote cite { display: block; margin-top: 18px; color: var(--gold-2); font-style: normal; font-weight: 1000; }
 .hours-location { display: grid; grid-template-columns: repeat(2, 1fr); gap: 18px; background: var(--cream); color: var(--ink); }
 .hours-location .eyebrow { color: #7b4b00; }
+.faq-section { background: linear-gradient(180deg, rgba(255,248,232,.08), rgba(255,248,232,.04)); }
+.faq-grid a { color: #075f36; font-weight: 1000; }
 .card { border-color: var(--line-dark); background: #fffdf6; border-radius: 30px; padding: clamp(24px, 4vw, 38px); color: var(--ink); }
 dl { display: grid; gap: 14px; margin: 24px 0; }
 dl div { display: flex; justify-content: space-between; gap: 18px; padding-bottom: 14px; border-bottom: 1px solid var(--line-dark); }
