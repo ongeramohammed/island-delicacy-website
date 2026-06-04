@@ -1,7 +1,7 @@
 {
-  "name": "Island Delicacy Jamaican Kitchen",
+  "name": "Island Delicacy",
   "short_name": "Island Delicacy",
-  "description": "Official Island Delicacy Jamaican Kitchen website for NYC Jamaican pre-order plates.",
+  "description": "Official Island Delicacy website for Caribbean food pre-orders.",
   "start_url": "/",
   "scope": "/",
   "display": "standalone",
