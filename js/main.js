@@ -106,3 +106,29 @@ function setupChat() {
 }
 
 setupChat();
+
+
+function setupMotionReveals() {
+  const targets = document.querySelectorAll('.section-heading, .quick-cards article, .dish-card, .menu-card, .plate-infographic, .motion-steps article, .story-card, .gallery-grid figure, .card, .map-card');
+  if (!targets.length) return;
+  targets.forEach((el) => el.classList.add('reveal-on-scroll'));
+  document.documentElement.classList.add('reveal-ready');
+
+  if (!('IntersectionObserver' in window) || window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+    targets.forEach((el) => el.classList.add('is-visible'));
+    return;
+  }
+
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach((entry) => {
+      if (entry.isIntersecting) {
+        entry.target.classList.add('is-visible');
+        observer.unobserve(entry.target);
+      }
+    });
+  }, { threshold: 0.16, rootMargin: '0px 0px -40px 0px' });
+
+  targets.forEach((el) => observer.observe(el));
+}
+
+setupMotionReveals();
