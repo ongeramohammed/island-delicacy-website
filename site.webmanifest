@@ -1,24 +1,13 @@
 {
   "name": "Island Delicacy",
   "short_name": "Island Delicacy",
-  "description": "Official Island Delicacy website for Caribbean food pre-orders.",
+  "description": "Preorder-only Caribbean comfort food in San Diego.",
   "start_url": "/",
-  "scope": "/",
   "display": "standalone",
-  "background_color": "#06120d",
-  "theme_color": "#07140f",
+  "background_color": "#F4ECDD",
+  "theme_color": "#3E5C34",
   "icons": [
-    {
-      "src": "/assets/icons/icon-192.png",
-      "sizes": "192x192",
-      "type": "image/png",
-      "purpose": "any"
-    },
-    {
-      "src": "/assets/icons/icon-512.png",
-      "sizes": "512x512",
-      "type": "image/png",
-      "purpose": "any"
-    }
+    {"src":"/assets/icons/icon-192.png","sizes":"192x192","type":"image/png"},
+    {"src":"/assets/icons/icon-512.png","sizes":"512x512","type":"image/png"}
   ]
 }
