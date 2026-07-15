@@ -1,0 +1,11 @@
+# Local and deployment secrets
+.env
+.env.*
+!.env.example
+.dev.vars
+.wrangler/
+
+# Local tooling and operating-system files
+.DS_Store
+Thumbs.db
+node_modules/
