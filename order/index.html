@@ -1,0 +1,56 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Order | Island Delicacy</title>
+  <meta name="description" content="Build a preorder plate, choose two sides and a pickup date, then continue to Square checkout or text the business line.">
+  <link rel="canonical" href="https://islanddelicacy.com/order/">
+  <meta property="og:title" content="Order | Island Delicacy">
+  <meta property="og:description" content="Build a preorder plate, choose two sides and a pickup date, then continue to Square checkout or text the business line.">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://islanddelicacy.com/order/">
+  <meta property="og:image" content="https://islanddelicacy.com/assets/gallery/dish-jerk.jpg">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="theme-color" content="#0B0A08">
+  <link rel="icon" href="/favicon.ico">
+  <link rel="apple-touch-icon" href="/assets/icons/apple-touch-icon.png">
+  <link rel="manifest" href="/site.webmanifest">
+  <link rel="stylesheet" href="/css/styles.css">
+</head>
+<body>
+<div class="announcement" data-cutoff-bar>Orders close at 10:00 AM daily</div>
+<header class="site-header">
+  <nav class="nav" aria-label="Main navigation">
+    <a class="brand" href="/" aria-label="Island Delicacy home"><img src="/assets/brand/logo-cream.png" alt="Island Delicacy"></a>
+    <button class="menu-toggle" type="button" data-menu-toggle>MENU</button>
+    <div class="nav-links">
+      <a href="/" class="">Home</a><a href="/order/" class="active">Order</a><a href="/catering/" class="">Catering</a><a href="/about/" class="">About</a><a href="/faq/" class="">FAQ</a>
+    </div>
+    <div class="nav-actions"><a class="phone" href="tel:+19297424202">(929) 742-4202</a><a class="btn btn-primary" href="/order/">Order for <span data-earliest-label>tomorrow</span></a></div>
+  </nav>
+</header>
+<main data-order-app>
+  <section class="page-hero"><div class="container"><p class="eyebrow">Preorder only</p><h1 class="section-title">Order for <span data-earliest-label>tomorrow</span></h1><p class="lead"><span data-cutoff-line>Orders close at 10 AM.</span> Most plates include rice & peas + two sides (rasta pasta plates don't — grab it as a side). Prices are firm — that's what keeps the quality consistent.</p></div></section>
+  <section class="container order-layout">
+    <div>
+      <div class="order-section"><h2>1. Pick plate</h2><div class="order-grid" data-plate-choices></div><div class="customize hidden" data-customize><label for="plateNote">MAKE IT YOURS <span>— anything to leave off your <span data-customize-name>plate</span>? just type it</span></label><input id="plateNote" name="plateNote" maxlength="200" placeholder="e.g. no carrots, light spice…" disabled></div></div>
+      <div class="order-section"><h2>2. Pick exactly 2 sides</h2><div class="side-list" data-side-options></div><p class="muted"><em data-sides-note>Rice & peas are always included.</em></p><div class="extra-meat-options" aria-label="Extra meat options"><button type="button" class="toggle-chip" data-meat="meat" aria-pressed="false">＋ Extra meat — $10</button><button type="button" class="toggle-chip" data-meat="oxtail" aria-pressed="false">＋ Extra oxtail — $12</button></div><div class="side-only"><h3>JUST WANT SIDES? <span>no plate needed — $5 each</span></h3><div class="side-only-options" data-side-only-options></div></div></div>
+      <div class="order-section"><h2>3. Quantity + pickup date</h2><div class="quantity"><button type="button" data-qty-minus>−</button><span class="qty-value" data-qty-value>1</span><button type="button" data-qty-plus>+</button></div><div class="date-chips" data-date-chips style="margin-top:16px"></div><p class="lead" style="font-size:16px"><em>We'll text you the day of to set your pickup time.</em></p></div>
+      <div class="order-section"><h2>4. Your details</h2><div class="fields"><div class="field"><label for="customerName">Name</label><input id="customerName" name="customerName" autocomplete="name" required></div><div class="field"><label for="customerPhone">Phone</label><input id="customerPhone" name="customerPhone" autocomplete="tel" required></div></div></div>
+      <div class="soon"><strong>Coming soon — text to request:</strong> Island Bowls · Oxtail Tacos ($26) · Jerk Chicken Tacos ($22) · Jamaican Breakfast.</div>
+      <div class="success hidden" data-confirmation><h2>Order in. You're set.</h2><p>We'll text you at the phone number on your order on pickup day.</p></div>
+    </div>
+    <aside class="summary" aria-live="polite"><img src="/assets/brand/logo-gold.png" alt="Island Delicacy"><h2>Your preorder</h2><div data-summary-lines></div><div class="summary-total"><span>Total</span><span data-total>$0</span></div><button class="btn checkout" type="button" data-checkout disabled>Finish the steps above</button><p>Secure payment via Square · no account needed. Orders without a connected Square link fall back to text.</p></aside>
+  </section>
+</main><footer class="footer">
+  <div class="container">
+    <div><img src="/assets/brand/logo-gold.png" alt="Island Delicacy"><p>Fresh Caribbean comfort food in San Diego, cooked by preorder only. Orders close 10 AM daily.</p></div>
+    <div><h3>Pages</h3><a href="/">Home</a><a href="/order/">Order</a><a href="/catering/">Catering</a><a href="/about/">About</a><a href="/faq/">FAQ / Contact</a></div>
+    <div><h3>Contact</h3><a href="tel:+19297424202">(929) 742-4202</a><a href="sms:+19297424202">Text to request coming-soon items</a><a href="mailto:islanddelicacy@outlook.com">islanddelicacy@outlook.com</a></div>
+  </div>
+</footer>
+<script src="/js/menu.js"></script>
+<script src="/js/main.js"></script>
+</body>
+</html>

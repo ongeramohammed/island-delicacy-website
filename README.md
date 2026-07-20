@@ -4,11 +4,13 @@ Static GitHub Pages site for Island Delicacy, a preorder-only Jamaican/Caribbean
 
 ## Pages
 
-- `index.html` — photo hero, weekly menu preview, preorder explanation, testimonials
-- `order.html` — single-page preorder flow with Pacific 10:00 AM cutoff logic
-- `catering.html` — catering packages and inquiry form
-- `about.html` — Shantay Cole owner story
-- `faq.html` — preorder/payment/contact FAQ
+- `/` — photo hero, weekly menu preview, preorder explanation, testimonials
+- `/order/` — single-page preorder flow with Pacific 10:00 AM cutoff logic
+- `/catering/` — catering packages and inquiry form
+- `/about/` — Shantay Cole owner story
+- `/faq/` — preorder/payment/contact FAQ
+
+The legacy `.html` files remain as `noindex` compatibility redirects so old bookmarks keep working. All primary navigation, canonical metadata, Open Graph URLs, and sitemap entries use the clean routes.
 
 ## Ordering rules implemented
 
@@ -38,4 +40,4 @@ The catering form uses a documented `mailto:` fallback to `islanddelicacy@outloo
 python3 -m http.server 8080
 ```
 
-Then open `http://localhost:8080`.
+Then open `http://localhost:8080/`. Clean routes such as `/order/` work because each route is backed by a directory `index.html`.
