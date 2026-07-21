@@ -50,6 +50,30 @@ def verify_files() -> list[str]:
                 if pattern in text:
                     errors.append(f"nested relative asset in {page.relative_to(ROOT)}: {pattern}")
 
+    menu_js = (ROOT / "js" / "menu.js").read_text(encoding="utf-8")
+    main_js = (ROOT / "js" / "main.js").read_text(encoding="utf-8")
+    css = (ROOT / "css" / "styles.css").read_text(encoding="utf-8")
+    menu_assets = sorted(set(re.findall(r"['\"](/assets/menu/[^'\"]+\.webp)['\"]", menu_js)))
+    if len(menu_assets) != 16:
+        errors.append(f"expected 16 unique menu photos, found {len(menu_assets)}")
+    if "assets/gallery/dish-" in menu_js or "assets/gallery/dish-" in css:
+        errors.append("legacy placeholder dish image still referenced")
+    for required in ("window.SIDE_IMAGES", "data-menu-lightbox", "data-zoom-item"):
+        if required not in menu_js + main_js:
+            errors.append(f"menu photography integration missing: {required}")
+    if "../assets/menu/jerk-chicken.webp" not in css:
+        errors.append("homepage hero is not using the new menu photography")
+    for target in menu_assets:
+        asset = ROOT / target.lstrip("/")
+        if not asset.is_file():
+            errors.append(f"missing menu photo: {target}")
+        elif asset.stat().st_size > 750_000:
+            errors.append(f"menu photo exceeds 750 KB performance budget: {target}")
+    for forbidden in ("*.zip", "*.dc.html"):
+        for artifact in ROOT.rglob(forbidden):
+            if ".git" not in artifact.parts:
+                errors.append(f"prototype/archive must not ship: {artifact.relative_to(ROOT)}")
+
     sitemap = (ROOT / "sitemap.xml").read_text(encoding="utf-8")
     if ".html" in sitemap:
         errors.append("sitemap.xml still contains .html")
@@ -81,12 +105,16 @@ def verify_http() -> list[str]:
         thread.start()
         base = f"http://127.0.0.1:{server.server_address[1]}"
         try:
-            paths = ["/", *(f"/{route}/" for route in ROUTES), *(f"/{route}.html?fixture=1" for route in ROUTES)]
+            menu_js = (ROOT / "js" / "menu.js").read_text(encoding="utf-8")
+            image_paths = sorted(set(re.findall(r"['\"](/assets/menu/[^'\"]+\.webp)['\"]", menu_js)))
+            paths = ["/", *(f"/{route}/" for route in ROUTES), *(f"/{route}.html?fixture=1" for route in ROUTES), *image_paths]
             for path in paths:
                 with urllib.request.urlopen(base + path, timeout=5) as response:
                     body = response.read()
                     if response.status != 200 or len(body) < 100:
                         errors.append(f"HTTP check failed for {path}: {response.status}, {len(body)} bytes")
+                    if path.endswith(".webp") and response.headers.get_content_type() != "image/webp":
+                        errors.append(f"wrong image content type for {path}: {response.headers.get_content_type()}")
         finally:
             server.shutdown()
             thread.join(timeout=5)
@@ -100,7 +128,7 @@ def main() -> int:
         for error in errors:
             print(f"- {error}")
         return 1
-    print("PASS: 5 clean pages, 4 compatibility redirects, sitemap, local links/assets, and HTTP routes")
+    print("PASS: clean routes, 16 optimized menu photos, side imagery, lightbox hooks, sitemap, assets, and HTTP routes")
     return 0
 
 

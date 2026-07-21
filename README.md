@@ -24,6 +24,16 @@ The legacy `.html` files remain as `noindex` compatibility redirects so old book
 - No Stew Peas are listed.
 - Bowls, tacos and breakfast are shown only in a non-orderable “Coming soon — text to request” strip.
 
+## Menu photography
+
+- Every orderable plate has its own optimized 1400×1400 WebP photo under `assets/menu/`.
+- The four side choices also have dedicated photos.
+- Homepage cards feature Oxtail, Jerk Chicken, Curry Goat, and Brown Stew Chicken.
+- Order-page thumbnails open an accessible tap-to-enlarge lightbox; `Esc` closes it.
+- Original multi-megabyte source PNGs and the design-tool prototype remain outside the public repository.
+
+Run `python3 scripts/verify_clean_urls.py` to check the clean routes, all 16 menu photos, local assets, compatibility redirects, and local HTTP responses.
+
 ## Square payment links
 
 `js/menu.js` contains the menu data and `window.SQUARE_LINKS`. Paste Shantay's real Square Payment Link URL for each item ID when available. Until then, the checkout button opens a prefilled SMS order to the business line.

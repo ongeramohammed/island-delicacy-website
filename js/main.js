@@ -46,7 +46,9 @@ function navInit(){
 
 function hydratePreviewCards(){
   const wrap=document.querySelector('[data-menu-preview]'); if(!wrap || !window.ISLAND_MENU) return;
-  wrap.innerHTML = window.ISLAND_MENU.slice(0,4).map(item => `<article class="plate-card"><figure><img src="${item.image}" alt="${item.name} plate" loading="lazy"><span class="chip">Limited daily</span></figure><div class="plate-body"><div class="plate-title">${item.name}</div><div class="plate-meta"><span>${item.category}</span><span>$${item.price}</span></div></div></article>`).join('');
+  const featuredIds=['oxtail','jerk','curry-goat','brown-stew-chicken'];
+  const featured=featuredIds.map(id=>window.ISLAND_MENU.find(item=>item.id===id)).filter(Boolean);
+  wrap.innerHTML = featured.map(item => `<a class="plate-card" href="/order/" aria-label="Order ${escapeHtml(item.name)}"><figure><img src="${item.image}" alt="${escapeHtml(item.name)} plate" loading="lazy" width="1400" height="1400"><span class="chip">Limited daily</span></figure><div class="plate-body"><div class="plate-title">${escapeHtml(item.name)}</div><div class="plate-meta"><span>${escapeHtml(item.category)}</span><span>$${item.price}</span></div></div></a>`).join('');
 }
 
 function orderInit(){
@@ -57,13 +59,48 @@ function orderInit(){
   renderChoices(); renderSides(); renderSideOnlyButtons(); renderDates(dates); bindInputs(); updateCustomize(); renderSummary();
 }
 
+function ensureMenuLightbox(){
+  let overlay=document.querySelector('[data-menu-lightbox]');
+  if(overlay) return overlay;
+  document.body.insertAdjacentHTML('beforeend', `<div class="menu-lightbox" data-menu-lightbox hidden role="dialog" aria-modal="true" aria-label="Menu photo"><button type="button" class="lightbox-close" data-lightbox-close aria-label="Close enlarged photo">×</button><img data-lightbox-image alt=""><p data-lightbox-caption></p></div>`);
+  overlay=document.querySelector('[data-menu-lightbox]');
+  overlay.addEventListener('click',closeMenuLightbox);
+  document.addEventListener('keydown',event=>{ if(event.key==='Escape') closeMenuLightbox(); });
+  return overlay;
+}
+
+function openMenuLightbox(item){
+  if(!item?.image) return;
+  const overlay=ensureMenuLightbox();
+  const image=overlay.querySelector('[data-lightbox-image]');
+  image.src=item.image;
+  image.alt=`${item.name} plate`;
+  overlay.querySelector('[data-lightbox-caption]').textContent=`${item.name} · tap anywhere to close`;
+  overlay.hidden=false;
+  document.body.classList.add('lightbox-open');
+  overlay.querySelector('[data-lightbox-close]').focus();
+}
+
+function closeMenuLightbox(){
+  const overlay=document.querySelector('[data-menu-lightbox]');
+  if(!overlay || overlay.hidden) return;
+  overlay.hidden=true;
+  document.body.classList.remove('lightbox-open');
+}
+
 function renderChoices(){
   const wrap=document.querySelector('[data-plate-choices]');
   wrap.innerHTML = window.ISLAND_MENU.map(item => {
     const inclusion = isRastaPasta(item) ? 'rice & peas available as a side' : 'rice & peas included';
-    return `<button type="button" class="choice" data-item="${item.id}"><div class="choice-title"><span>${item.name}</span><span>$${item.price}</span></div><small>${item.category} · ${inclusion} · <b>Limited daily</b></small></button>`;
+    return `<div class="choice" data-choice-item="${item.id}"><button type="button" class="plate-thumb" data-zoom-item="${item.id}" aria-label="Enlarge ${escapeHtml(item.name)} photo" title="Tap to enlarge"><img src="${item.image}" alt="" loading="lazy" width="1400" height="1400"></button><button type="button" class="choice-pick" data-item="${item.id}"><span class="choice-title"><span>${escapeHtml(item.name)}</span><span>$${item.price}</span></span><small>${escapeHtml(item.category)} · ${inclusion} · <b>Limited daily</b></small></button></div>`;
   }).join('');
   wrap.addEventListener('click', e=>{
+    const zoom=e.target.closest('[data-zoom-item]');
+    if(zoom){
+      e.preventDefault(); e.stopPropagation();
+      openMenuLightbox(window.ISLAND_MENU.find(item=>item.id===zoom.dataset.zoomItem));
+      return;
+    }
     const btn=e.target.closest('[data-item]'); if(!btn) return;
     const nextItem=window.ISLAND_MENU.find(x=>x.id===btn.dataset.item);
     if(state.item?.id !== nextItem?.id) state.note='';
@@ -75,13 +112,16 @@ function renderChoices(){
 }
 
 function renderChoicesSelected(){
-  document.querySelectorAll('[data-item]').forEach(btn=>btn.classList.toggle('selected', state.item && btn.dataset.item===state.item.id));
+  document.querySelectorAll('[data-choice-item]').forEach(card=>card.classList.toggle('selected', state.item && card.dataset.choiceItem===state.item.id));
 }
 
 function renderSides(){
   const wrap=document.querySelector('[data-side-options]'); if(!wrap) return;
   const options=sidesFor(state.item);
-  wrap.innerHTML=options.map(side=>`<label><input type="checkbox" name="side" value="${side}" ${state.sides.includes(side)?'checked':''}> ${side}</label>`).join('');
+  wrap.innerHTML=options.map(side=>{
+    const image=window.SIDE_IMAGES?.[side] || '';
+    return `<label class="side-option"><img src="${image}" alt="${escapeHtml(side)}" loading="lazy" width="1400" height="1400"><span class="side-option-check"><input type="checkbox" name="side" value="${escapeHtml(side)}" ${state.sides.includes(side)?'checked':''}><span>${escapeHtml(side)}</span></span></label>`;
+  }).join('');
   wrap.querySelectorAll('[name="side"]').forEach(input=>input.addEventListener('change',()=>{
     const checked=[...wrap.querySelectorAll('[name="side"]:checked')];
     if(checked.length>2){ input.checked=false; alert('Pick exactly 2 sides.'); return; }
