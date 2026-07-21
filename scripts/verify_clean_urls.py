@@ -111,10 +111,16 @@ def verify_order_design() -> list[str]:
 
     for required, why in (
         (".side-list{display:flex;flex-wrap:wrap;gap:12px", "side list must be a wrapping flex row"),
-        ("label.side-option{display:block;flex:0 0 auto;width:172px", "side cards must be fixed 172px"),
+        ("label.side-option{position:relative;display:block;flex:0 0 auto;width:172px", "side cards must be fixed 172px and contain their visually hidden inputs"),
         (".side-option>img{width:150px;height:96px", "side photos must be fixed 150x96"),
-        (".order-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr))", "plate grid must auto-fill (3 columns at desktop widths)"),
+        (".order-layout{display:grid;grid-template-columns:minmax(0,1fr) 340px;gap:28px;align-items:start;max-width:1400px}", "desktop order layout must provide enough width for contained three-column meal cards"),
+        (".order-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));grid-auto-rows:1fr", "plate grid must render three equal-width desktop columns with equal-height rows"),
+        (".choice{padding:10px;min-height:142px;height:100%;min-width:0;overflow:hidden", "plate cards must be equal-height and clip local overflow"),
+        (".choice-title{display:grid;grid-template-columns:minmax(0,1fr) auto", "plate titles and prices need a non-overflowing grid"),
+        (".choice-title span:first-child{min-width:0;overflow-wrap:anywhere", "long meal names must wrap inside their cards"),
         (".cap-chip{", "daily-cap chip style missing"),
+        (".side-option input{position:absolute;inset:0;z-index:2;width:100%;height:100%;margin:0;padding:0;opacity:0", "side checkboxes must remain accessible full-card controls while visually hidden"),
+        (".side-option:has(input:checked){border-color:#E0A52A", "selected side cards must glow instead of showing a checkbox"),
     ):
         if required not in css:
             errors.append(f"styles.css design requirement missing ({why}): {required}")

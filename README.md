@@ -27,7 +27,8 @@ The legacy `.html` files remain as `noindex` compatibility redirects so old book
 ## Menu photography
 
 - Every orderable plate has its own optimized 1400×1400 WebP photo under `assets/menu/`.
-- The four side choices also have dedicated photos.
+- The four side choices also have dedicated photos; the native checkboxes stay keyboard/screen-reader accessible but are visually replaced by a gold glow on the selected card.
+- Plate cards use equal-height square thumbnails, wrapped titles, and contained prices so every desktop/mobile card stays aligned.
 - Homepage cards feature Oxtail, Jerk Chicken, Curry Goat, and Brown Stew Chicken.
 - Order-page thumbnails open an accessible tap-to-enlarge lightbox; `Esc` closes it.
 - Original multi-megabyte source PNGs and the design-tool prototype remain outside the public repository.
