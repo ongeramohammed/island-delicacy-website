@@ -6,8 +6,9 @@
   <title>Order moved | Island Delicacy</title>
   <meta name="robots" content="noindex">
   <link rel="canonical" href="https://islanddelicacy.com/order/">
-  <meta http-equiv="refresh" content="0; url=/order/">
-  <script>location.replace('/order/' + location.search + location.hash);</script>
+  <script>
+    if (location.pathname === '/order.html') location.replace('/order/' + location.search + location.hash);
+  </script>
 </head>
 <body>
   <p>This page moved to <a href="/order/">/order/</a>.</p>

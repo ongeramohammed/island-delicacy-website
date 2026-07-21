@@ -6,8 +6,9 @@
   <title>FAQ moved | Island Delicacy</title>
   <meta name="robots" content="noindex">
   <link rel="canonical" href="https://islanddelicacy.com/faq/">
-  <meta http-equiv="refresh" content="0; url=/faq/">
-  <script>location.replace('/faq/' + location.search + location.hash);</script>
+  <script>
+    if (location.pathname === '/faq.html') location.replace('/faq/' + location.search + location.hash);
+  </script>
 </head>
 <body>
   <p>This page moved to <a href="/faq/">/faq/</a>.</p>

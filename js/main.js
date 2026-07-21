@@ -92,7 +92,7 @@ function renderChoices(){
   const wrap=document.querySelector('[data-plate-choices]');
   wrap.innerHTML = window.ISLAND_MENU.map(item => {
     const inclusion = isRastaPasta(item) ? 'rice & peas available as a side' : 'rice & peas included';
-    return `<div class="choice" data-choice-item="${item.id}"><button type="button" class="plate-thumb" data-zoom-item="${item.id}" aria-label="Enlarge ${escapeHtml(item.name)} photo" title="Tap to enlarge"><img src="${item.image}" alt="" loading="lazy" width="1400" height="1400"></button><button type="button" class="choice-pick" data-item="${item.id}"><span class="choice-title"><span>${escapeHtml(item.name)}</span><span>$${item.price}</span></span><small>${escapeHtml(item.category)} · ${inclusion} · <b>Limited daily</b></small></button></div>`;
+    return `<div class="choice" data-choice-item="${item.id}"><button type="button" class="plate-thumb" data-zoom-item="${item.id}" aria-label="Enlarge ${escapeHtml(item.name)} photo" title="Tap to enlarge"><img src="${item.image}" alt="" loading="lazy" width="64" height="64"></button><button type="button" class="choice-pick" data-item="${item.id}" title="${escapeHtml(inclusion)}"><span class="choice-title"><span>${escapeHtml(item.name)}</span><span>$${item.price}</span></span><span class="choice-meta"><small>${escapeHtml(item.category)}</small><span class="cap-chip">${item.cap} DAILY MAX</span></span></button></div>`;
   }).join('');
   wrap.addEventListener('click', e=>{
     const zoom=e.target.closest('[data-zoom-item]');
@@ -120,7 +120,7 @@ function renderSides(){
   const options=sidesFor(state.item);
   wrap.innerHTML=options.map(side=>{
     const image=window.SIDE_IMAGES?.[side] || '';
-    return `<label class="side-option"><img src="${image}" alt="${escapeHtml(side)}" loading="lazy" width="1400" height="1400"><span class="side-option-check"><input type="checkbox" name="side" value="${escapeHtml(side)}" ${state.sides.includes(side)?'checked':''}><span>${escapeHtml(side)}</span></span></label>`;
+    return `<label class="side-option"><img src="${image}" alt="${escapeHtml(side)}" loading="lazy" width="150" height="96"><span class="side-option-check"><input type="checkbox" name="side" value="${escapeHtml(side)}" ${state.sides.includes(side)?'checked':''}><span>${escapeHtml(side)}</span></span></label>`;
   }).join('');
   wrap.querySelectorAll('[name="side"]').forEach(input=>input.addEventListener('change',()=>{
     const checked=[...wrap.querySelectorAll('[name="side"]:checked')];

@@ -6,8 +6,9 @@
   <title>About moved | Island Delicacy</title>
   <meta name="robots" content="noindex">
   <link rel="canonical" href="https://islanddelicacy.com/about/">
-  <meta http-equiv="refresh" content="0; url=/about/">
-  <script>location.replace('/about/' + location.search + location.hash);</script>
+  <script>
+    if (location.pathname === '/about.html') location.replace('/about/' + location.search + location.hash);
+  </script>
 </head>
 <body>
   <p>This page moved to <a href="/about/">/about/</a>.</p>

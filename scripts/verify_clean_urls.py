@@ -86,9 +86,52 @@ def verify_files() -> list[str]:
             errors.append(f"missing compatibility redirect: {stub.name}")
             continue
         text = stub.read_text(encoding="utf-8")
-        for required in ("noindex", expected, f"url=/{route}/", "location.search", "location.hash"):
+        for required in (
+            "noindex",
+            expected,
+            f"location.pathname === '/{route}.html'",
+            f"location.replace('/{route}/'",
+            "location.search",
+            "location.hash",
+        ):
             if required not in text:
                 errors.append(f"{stub.name} missing redirect requirement: {required}")
+        if "http-equiv=\"refresh\"" in text:
+            errors.append(f"{stub.name} still has an unconditional meta refresh (redirect-loop risk)")
+    return errors
+
+
+def verify_order_design() -> list[str]:
+    """Fixed side cards, plate-grid breakpoints, and truthful daily-cap wording."""
+    errors: list[str] = []
+    css = (ROOT / "css" / "styles.css").read_text(encoding="utf-8")
+    main_js = (ROOT / "js" / "main.js").read_text(encoding="utf-8")
+    menu_js = (ROOT / "js" / "menu.js").read_text(encoding="utf-8")
+    order_html = (ROOT / "order" / "index.html").read_text(encoding="utf-8")
+
+    for required, why in (
+        (".side-list{display:flex;flex-wrap:wrap;gap:12px", "side list must be a wrapping flex row"),
+        ("label.side-option{display:block;flex:0 0 auto;width:172px", "side cards must be fixed 172px"),
+        (".side-option>img{width:150px;height:96px", "side photos must be fixed 150x96"),
+        (".order-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr))", "plate grid must auto-fill (3 columns at desktop widths)"),
+        (".cap-chip{", "daily-cap chip style missing"),
+    ):
+        if required not in css:
+            errors.append(f"styles.css design requirement missing ({why}): {required}")
+    if re.search(r"\.side-list\{grid-template-columns", css):
+        errors.append("styles.css still forces side-list grid columns (stretched cards)")
+    if ".order-grid,.faq-grid{grid-template-columns:1fr}" not in css:
+        errors.append("styles.css missing single-column plate grid at mobile breakpoint")
+
+    if 'width="150" height="96"' not in main_js:
+        errors.append('main.js side images must declare intrinsic width="150" height="96"')
+    if 'width="64" height="64"' not in main_js:
+        errors.append('main.js plate thumbs must declare intrinsic width="64" height="64"')
+    if "DAILY MAX" not in main_js:
+        errors.append("main.js plate cards must label caps as 'N DAILY MAX'")
+    for name, text in (("main.js", main_js), ("menu.js", menu_js), ("order/index.html", order_html), ("styles.css", css)):
+        if re.search(r"\bLEFT\b", text):
+            errors.append(f"{name} claims live inventory ('LEFT' wording is prohibited)")
     return errors
 
 
@@ -122,7 +165,7 @@ def verify_http() -> list[str]:
 
 
 def main() -> int:
-    errors = verify_files() + verify_http()
+    errors = verify_files() + verify_order_design() + verify_http()
     if errors:
         print(f"FAIL: {len(errors)} clean-route issue(s)")
         for error in errors:

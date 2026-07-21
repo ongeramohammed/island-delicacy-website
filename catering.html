@@ -6,8 +6,9 @@
   <title>Catering moved | Island Delicacy</title>
   <meta name="robots" content="noindex">
   <link rel="canonical" href="https://islanddelicacy.com/catering/">
-  <meta http-equiv="refresh" content="0; url=/catering/">
-  <script>location.replace('/catering/' + location.search + location.hash);</script>
+  <script>
+    if (location.pathname === '/catering.html') location.replace('/catering/' + location.search + location.hash);
+  </script>
 </head>
 <body>
   <p>This page moved to <a href="/catering/">/catering/</a>.</p>
