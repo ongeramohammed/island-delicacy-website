@@ -120,12 +120,15 @@ def verify_order_design() -> list[str]:
         (".choice-title span:first-child{min-width:0;overflow-wrap:anywhere", "long meal names must wrap inside their cards"),
         (".cap-chip{", "daily-cap chip style missing"),
         (".side-option input{position:absolute;inset:0;z-index:2;width:100%;height:100%;margin:0;padding:0;opacity:0", "side checkboxes must remain accessible full-card controls while visually hidden"),
-        (".side-option:has(input:checked){border-color:#E0A52A", "selected side cards must glow instead of showing a checkbox"),
+        (".side-option:has(input:checked){border:1.5px dashed #E0A52A;background:rgba(224,165,42,.12)}", "selected side cards must match the quiet selected extra-meat chip style"),
     ):
         if required not in css:
             errors.append(f"styles.css design requirement missing ({why}): {required}")
     if re.search(r"\.side-list\{grid-template-columns", css):
         errors.append("styles.css still forces side-list grid columns (stretched cards)")
+    selected_side_rule = re.search(r"\.side-option:has\(input:checked\)\{([^}]*)\}", css)
+    if selected_side_rule and any(token in selected_side_rule.group(1) for token in ("box-shadow", "outline")):
+        errors.append("selected side cards must not use a glow or outline")
     if ".order-grid,.faq-grid{grid-template-columns:1fr}" not in css:
         errors.append("styles.css missing single-column plate grid at mobile breakpoint")
 
@@ -138,6 +141,34 @@ def verify_order_design() -> list[str]:
     for name, text in (("main.js", main_js), ("menu.js", menu_js), ("order/index.html", order_html), ("styles.css", css)):
         if re.search(r"\bLEFT\b", text):
             errors.append(f"{name} claims live inventory ('LEFT' wording is prohibited)")
+    return errors
+
+
+def verify_catering() -> list[str]:
+    """Approved tray pricing and catering copy must be present and current."""
+    errors: list[str] = []
+    html = (ROOT / "catering" / "index.html").read_text(encoding="utf-8")
+    css = (ROOT / "css" / "styles.css").read_text(encoding="utf-8")
+    for required in (
+        "TRAY PRICING",
+        "Half tray feeds 8–10 · full tray feeds 16–20",
+        "Jerk Chicken", "$120", "$220",
+        "Oxtail", "$200", "$380",
+        "Chicken Rasta Pasta", "$140", "$260",
+        "Steamed Cabbage", "$50", "$95",
+        "BUILD-YOUR-SPREAD", "from $600",
+        "3+ trays, custom menu, setup included.",
+        "sms:+19297424202",
+        "Preorder early so the quote is fast and fair — book at least 48 hours ahead.",
+    ):
+        if required not in html:
+            errors.append(f"catering/index.html missing approved content: {required}")
+    for forbidden in ("from $500", "$15 larger-order fee", "Delivery wording"):
+        if forbidden in html:
+            errors.append(f"catering/index.html still contains obsolete copy: {forbidden}")
+    for required in (".tray-pricing{", ".tray-card{", ".spread-banner{"):
+        if required not in css:
+            errors.append(f"styles.css missing catering layout hook: {required}")
     return errors
 
 
@@ -171,7 +202,7 @@ def verify_http() -> list[str]:
 
 
 def main() -> int:
-    errors = verify_files() + verify_order_design() + verify_http()
+    errors = verify_files() + verify_order_design() + verify_catering() + verify_http()
     if errors:
         print(f"FAIL: {len(errors)} clean-route issue(s)")
         for error in errors:
