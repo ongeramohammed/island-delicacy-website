@@ -191,6 +191,24 @@ def verify_catering() -> list[str]:
     return errors
 
 
+def verify_about() -> list[str]:
+    """Shantay's story must credit her mother—not the Navy—for teaching her to cook."""
+    errors: list[str] = []
+    html = (ROOT / "about" / "index.html").read_text(encoding="utf-8")
+    for required in (
+        "Taught by Mom. Made with care. San Diego.",
+        "Shantay Cole learned to cook from her mother",
+        "Navy culinary specialist strengthened the discipline and consistency",
+        "a love of cooking that started at home",
+    ):
+        if required not in html:
+            errors.append(f"about/index.html missing approved story correction: {required}")
+    for forbidden in ("learned to cook in the Navy", "Navy-trained"):
+        if forbidden in html:
+            errors.append(f"about/index.html still misattributes Shantay's cooking origin: {forbidden}")
+    return errors
+
+
 class QuietHandler(http.server.SimpleHTTPRequestHandler):
     def log_message(self, format: str, *args: object) -> None:
         pass
@@ -221,7 +239,7 @@ def verify_http() -> list[str]:
 
 
 def main() -> int:
-    errors = verify_files() + verify_order_design() + verify_catering() + verify_http()
+    errors = verify_files() + verify_order_design() + verify_catering() + verify_about() + verify_http()
     if errors:
         print(f"FAIL: {len(errors)} clean-route issue(s)")
         for error in errors:
