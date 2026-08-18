@@ -46,3 +46,18 @@ body.lightbox-open{overflow:hidden}
 .summary-action button{width:28px;height:28px;border:1px solid rgba(243,204,99,.35);border-radius:3px;background:transparent;color:#F3CC63;font-size:18px;line-height:1;cursor:pointer}
 .summary-action button:hover,.summary-action button:focus-visible{border-color:#F3CC63;background:rgba(243,204,99,.12);outline:0}
 @media(max-width:580px){.quantity-actions{align-items:stretch;flex-direction:column}.quantity-actions .quantity{align-self:flex-start}.add-plate-button{width:100%}}
+
+/* Catering date picker and cross-device inquiry handoff */
+.date-input-shell{position:relative;display:flex;width:100%}
+.date-input-shell input[type="date"]{width:100%;min-height:48px;padding-right:58px;color-scheme:dark;cursor:pointer}
+.date-input-shell input[type="date"]::-webkit-calendar-picker-indicator{position:absolute;inset:0;width:100%;height:100%;margin:0;opacity:0;cursor:pointer}
+.date-picker-button{position:absolute;z-index:2;top:1px;right:1px;bottom:1px;width:48px;display:grid;place-items:center;border:0;border-left:1px solid rgba(224,165,42,.38);border-radius:0 2px 2px 0;background:#251F16;color:#F3CC63;cursor:pointer}
+.date-picker-button:hover,.date-picker-button:focus-visible{background:rgba(224,165,42,.18);outline:2px solid #F3CC63;outline-offset:1px}
+.date-picker-button svg{width:23px;height:23px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;pointer-events:none}
+.field-help{display:block;margin-top:6px;color:var(--muted);font-family:'Source Serif 4',serif;font-size:13px}
+.catering-send-options{margin-top:20px;padding:20px;border:1px solid rgba(243,204,99,.35);border-radius:3px;background:rgba(20,66,43,.45)}
+.catering-send-options h3{margin:0 0 6px;color:#F3CC63;font-size:18px}.catering-send-options>p{margin:0 0 14px}
+.catering-send-actions{display:flex;flex-wrap:wrap;gap:10px}.catering-send-actions .btn{min-height:44px}
+.copy-inquiry-button{border:1px solid rgba(243,204,99,.5);background:transparent;color:#F3CC63;cursor:pointer}
+.form-status{margin:12px 0 0!important;color:var(--muted);font-size:13px}
+@media(max-width:580px){.catering-send-actions{flex-direction:column}.catering-send-actions .btn{width:100%}.date-picker-button{width:52px}}

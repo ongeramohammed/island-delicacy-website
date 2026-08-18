@@ -158,6 +158,7 @@ def verify_catering() -> list[str]:
     errors: list[str] = []
     html = (ROOT / "catering" / "index.html").read_text(encoding="utf-8")
     css = (ROOT / "css" / "styles.css").read_text(encoding="utf-8")
+    main_js = (ROOT / "js" / "main.js").read_text(encoding="utf-8")
     for required in (
         "TRAY PRICING",
         "Half tray feeds 8–10 · full tray feeds 16–20",
@@ -169,15 +170,24 @@ def verify_catering() -> list[str]:
         "3+ trays, custom menu, setup included.",
         "sms:+19297424202",
         "Preorder early so the quote is fast and fair — book at least 48 hours ahead.",
+        "data-date-picker",
+        "Open event date calendar",
+        "data-catering-gmail",
+        "data-catering-outlook",
+        "data-catering-copy",
+        "Nothing has been sent yet.",
     ):
         if required not in html:
             errors.append(f"catering/index.html missing approved content: {required}")
-    for forbidden in ("from $500", "$15 larger-order fee", "Delivery wording"):
+    for forbidden in ("from $500", "$15 larger-order fee", "Delivery wording", "Opening your email app now as a mailto fallback"):
         if forbidden in html:
             errors.append(f"catering/index.html still contains obsolete copy: {forbidden}")
-    for required in (".tray-pricing{", ".tray-card{", ".spread-banner{"):
+    for required in (".tray-pricing{", ".tray-card{", ".spread-banner{", ".date-picker-button{", ".catering-send-options{"):
         if required not in css:
             errors.append(f"styles.css missing catering layout hook: {required}")
+    for required in ("dateInput.showPicker", "mail.google.com/mail/", "outlook.live.com/mail/", "navigator.clipboard.writeText"):
+        if required not in main_js:
+            errors.append(f"main.js missing catering interaction hook: {required}")
     return errors
 
 

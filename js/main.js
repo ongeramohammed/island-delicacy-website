@@ -349,7 +349,66 @@ async function checkout(){
 
 function cateringInit(){
   const form=document.querySelector('[data-catering-form]'); if(!form) return;
-  form.addEventListener('submit', e=>{ e.preventDefault(); const data=new FormData(form); const body=`Catering inquiry from ${data.get('name')}%0APhone/email: ${data.get('contact')}%0ADate: ${data.get('date')}%0AHeadcount: ${data.get('headcount')}%0A%0A${data.get('message')}`; document.querySelector('[data-catering-success]').classList.remove('hidden'); setTimeout(()=>{ window.location.href=`mailto:${BUSINESS_EMAIL}?subject=Island Delicacy catering inquiry&body=${body}`; }, 500); });
+  const dateInput=form.querySelector('[name="date"]');
+  const datePicker=form.querySelector('[data-date-picker]');
+  const sendOptions=form.querySelector('[data-catering-send-options]');
+  const status=form.querySelector('[data-catering-status]');
+  let preparedInquiry='';
+
+  if(dateInput){
+    dateInput.min=isoDate(addDays(laNow(),2));
+    const openPicker=()=>{
+      dateInput.focus({preventScroll:true});
+      if(typeof dateInput.showPicker==='function'){
+        try{ dateInput.showPicker(); }catch(_error){ dateInput.click(); }
+      }else dateInput.click();
+    };
+    datePicker?.addEventListener('click', openPicker);
+    dateInput.addEventListener('click',()=>{
+      if(typeof dateInput.showPicker==='function'){
+        try{ dateInput.showPicker(); }catch(_error){ /* Native input remains usable. */ }
+      }
+    });
+  }
+
+  form.addEventListener('submit', e=>{
+    e.preventDefault();
+    if(!form.reportValidity()) return;
+    const data=new FormData(form);
+    const subject='Island Delicacy catering inquiry';
+    preparedInquiry=[
+      `Catering inquiry from ${data.get('name')}`,
+      `Phone/email: ${data.get('contact')}`,
+      `Event date: ${data.get('date')}`,
+      `Headcount: ${data.get('headcount') || 'Not provided'}`,
+      '',
+      data.get('message') || 'No additional message.'
+    ].join('\n');
+    const emailParams=`to=${encodeURIComponent(BUSINESS_EMAIL)}&subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(preparedInquiry)}`;
+    form.querySelector('[data-catering-sms]').href=smsOrderUrl(`Hi Island Delicacy,\n\n${preparedInquiry}`);
+    form.querySelector('[data-catering-gmail]').href=`https://mail.google.com/mail/?view=cm&fs=1&${emailParams.replace('subject=','su=')}`;
+    form.querySelector('[data-catering-outlook]').href=`https://outlook.live.com/mail/0/deeplink/compose?${emailParams}`;
+    sendOptions.classList.remove('hidden');
+    status.textContent='Choose an option above. Your details are prefilled for review.';
+    sendOptions.scrollIntoView({behavior:'smooth',block:'nearest'});
+  });
+
+  form.querySelector('[data-catering-copy]')?.addEventListener('click',async()=>{
+    if(!preparedInquiry) return;
+    try{
+      await navigator.clipboard.writeText(preparedInquiry);
+      status.textContent='Inquiry details copied. Paste them into any email or message app.';
+    }catch(_error){
+      const textarea=document.createElement('textarea');
+      textarea.value=preparedInquiry; textarea.style.position='fixed'; textarea.style.opacity='0';
+      document.body.appendChild(textarea); textarea.select(); document.execCommand('copy'); textarea.remove();
+      status.textContent='Inquiry details copied. Paste them into any email or message app.';
+    }
+  });
+
+  form.querySelectorAll('[data-catering-sms],[data-catering-gmail],[data-catering-outlook]').forEach(link=>link.addEventListener('click',()=>{
+    status.textContent='Your message is prepared. Review it, then press Send in the app that opens.';
+  }));
 }
 
 function escapeHtml(str){ return String(str).replace(/[&<>'"]/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c])); }
