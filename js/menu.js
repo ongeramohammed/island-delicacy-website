@@ -22,3 +22,6 @@ window.SQUARE_LINKS = {
   jerk:'', 'curry-chicken':'', 'fried-chicken':'', 'barbi-fried-chicken':'', 'brown-stew-chicken':'', oxtail:'', 'curry-goat':'',
   'chicken-rasta-pasta':'', 'shrimp-rasta-pasta':'', 'oxtail-rasta-pasta':'', 'curry-shrimp':'', 'escovitch-fish':''
 };
+// The Sandbox endpoint is used only when the order page has ?sandbox=1.
+// Production stays empty until Shantay approves a real-money cutover.
+window.ISLAND_CHECKOUT = Object.assign({sandbox:'https://island-delicacy-checkout-sandbox.jonathan-bruce369-3a2.workers.dev/api/checkout', production:''}, window.ISLAND_CHECKOUT || {});

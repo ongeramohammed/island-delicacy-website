@@ -1,0 +1,17 @@
+{
+  "name": "island-delicacy-checkout-worker",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test": "node --test test/checkout.test.js test/worker.test.js",
+    "test:live-sandbox": "node test/live-sandbox-e2e.mjs",
+    "test:deployed-sandbox": "node test/deployed-sandbox-e2e.mjs",
+    "check": "npm test && wrangler deploy --env=\"\" --dry-run && wrangler deploy --env production --dry-run",
+    "dev": "wrangler dev",
+    "deploy:sandbox": "wrangler deploy --env=\"\"",
+    "deploy:production": "wrangler deploy --env production"
+  },
+  "devDependencies": {
+    "wrangler": "4.118.0"
+  }
+}

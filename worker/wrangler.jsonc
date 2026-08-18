@@ -1,0 +1,24 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "island-delicacy-checkout-sandbox",
+  "main": "src/index.js",
+  "compatibility_date": "2026-08-04",
+  "workers_dev": true,
+  "vars": {
+    "SQUARE_ENVIRONMENT": "sandbox",
+    "SQUARE_API_VERSION": "2026-07-15",
+    "ALLOWED_ORIGINS": "https://islanddelicacy.com,https://www.islanddelicacy.com,http://localhost:8000,http://127.0.0.1:8000,http://localhost:18000,http://127.0.0.1:18000",
+    "CHECKOUT_REDIRECT_URL": "https://islanddelicacy.com/order/?paid=1&sandbox=1"
+  },
+  "env": {
+    "production": {
+      "name": "island-delicacy-checkout",
+      "vars": {
+        "SQUARE_ENVIRONMENT": "production",
+        "SQUARE_API_VERSION": "2026-07-15",
+        "ALLOWED_ORIGINS": "https://islanddelicacy.com,https://www.islanddelicacy.com",
+        "CHECKOUT_REDIRECT_URL": "https://islanddelicacy.com/order/?paid=1"
+      }
+    }
+  }
+}

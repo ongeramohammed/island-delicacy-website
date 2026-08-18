@@ -4,16 +4,41 @@ const BUSINESS_EMAIL = 'islanddelicacy@outlook.com';
 const DEFAULT_SIDES = ['Steamed Cabbage', 'Sweet Plantains', 'Rasta Pasta'];
 const RASTA_SIDES = ['Steamed Cabbage', 'Sweet Plantains', 'Rice & Peas'];
 const SIDE_ONLY_OPTIONS = ['Steamed Cabbage', 'Sweet Plantains', 'Rasta Pasta', 'Rice & Peas'];
-const state = { item:null, sides:[], meat:false, qty:1, date:'', name:'', phone:'', note:'', sideOnly:[] };
+const SIDE_ONLY_IDS = {
+  'Steamed Cabbage':'side-steamed-cabbage',
+  'Sweet Plantains':'side-sweet-plantains',
+  'Rasta Pasta':'side-rasta-pasta',
+  'Rice & Peas':'side-rice-and-peas'
+};
+const state = { item:null, sides:[], meat:false, qty:1, date:'', dateLabel:'', name:'', phone:'', note:'', sideOnly:[], checkoutPending:false };
 
 function laNow(){ return new Date(new Date().toLocaleString('en-US', { timeZone:'America/Los_Angeles' })); }
 function addDays(base, days){ const d = new Date(base); d.setDate(d.getDate()+days); return d; }
 function fmtDate(d){ return d.toLocaleDateString('en-US',{weekday:'short',month:'short',day:'numeric',timeZone:'America/Los_Angeles'}); }
 function fullDate(d){ return d.toLocaleDateString('en-US',{weekday:'long',month:'long',day:'numeric',year:'numeric',timeZone:'America/Los_Angeles'}); }
+function isoDate(d){ return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`; }
 function isRastaPasta(item){ return item?.category === 'Rasta Pasta'; }
 function sidesFor(item){ return isRastaPasta(item) ? RASTA_SIDES : DEFAULT_SIDES; }
 function meatPrice(kind){ return kind === 'oxtail' ? 12 : kind === 'meat' ? 10 : 0; }
 function meatLabel(kind){ return kind === 'oxtail' ? 'extra oxtail' : kind === 'meat' ? 'extra meat' : ''; }
+
+function checkoutApi(){
+  const config=window.ISLAND_CHECKOUT || {};
+  const sandbox=new URLSearchParams(location.search).get('sandbox')==='1';
+  return sandbox && config.sandbox
+    ? {url:config.sandbox, environment:'sandbox'}
+    : config.production ? {url:config.production, environment:'production'} : null;
+}
+
+function safeSquareUrl(value, environment){
+  try{
+    const url=new URL(value);
+    if(url.protocol!=='https:') return false;
+    return environment==='sandbox'
+      ? url.hostname==='sandbox.square.link'
+      : url.hostname==='square.link' || url.hostname==='checkout.square.site';
+  }catch(_error){ return false; }
+}
 
 function cutoffInfo(){
   const now = laNow();
@@ -54,8 +79,19 @@ function hydratePreviewCards(){
 function orderInit(){
   const root=document.querySelector('[data-order-app]'); if(!root || !window.ISLAND_MENU) return;
   const params=new URLSearchParams(location.search);
-  if(params.get('confirmed')==='1' || params.get('paid')==='1') document.querySelector('[data-confirmation]')?.classList.remove('hidden');
-  const info=cutoffInfo(); const dates=[]; for(let i=0;i<5;i++) dates.push(addDays(info.now, info.firstOffset+i)); state.date=fmtDate(dates[0]);
+  if(params.get('confirmed')==='1' || params.get('paid')==='1'){
+    const confirmation=document.querySelector('[data-confirmation]');
+    confirmation?.classList.remove('hidden');
+    try{
+      const last=JSON.parse(sessionStorage.getItem('islandDelicacyLastOrder') || '{}');
+      const message=confirmation?.querySelector('[data-confirmation-message]');
+      if(message && last.phone) message.textContent=`Square checkout returned successfully. We'll text ${last.phone} on pickup day.`;
+    }catch(_error){ /* Confirmation still renders without local recap data. */ }
+  }
+  if(params.get('sandbox')==='1' && window.ISLAND_CHECKOUT?.sandbox){
+    root.insertAdjacentHTML('afterbegin','<div class="container"><div class="success"><strong>SANDBOX TEST MODE</strong><p>No real charge will be made. Use a Square Sandbox test card only.</p></div></div>');
+  }
+  const info=cutoffInfo(); const dates=[]; for(let i=0;i<5;i++) dates.push(addDays(info.now, info.firstOffset+i)); state.date=isoDate(dates[0]); state.dateLabel=fmtDate(dates[0]);
   renderChoices(); renderSides(); renderSideOnlyButtons(); renderDates(dates); bindInputs(); updateCustomize(); renderSummary();
 }
 
@@ -157,8 +193,8 @@ function renderSideOnlyButtons(){
 
 function renderDates(dates){
   const wrap=document.querySelector('[data-date-chips]');
-  wrap.innerHTML = dates.map((d,i)=>`<button type="button" class="date-chip ${i===0?'selected':''}" data-date="${fmtDate(d)}" title="${fullDate(d)}">${fmtDate(d)}</button>`).join('');
-  wrap.addEventListener('click',e=>{const b=e.target.closest('[data-date]'); if(!b) return; state.date=b.dataset.date; document.querySelectorAll('[data-date]').forEach(x=>x.classList.toggle('selected',x===b)); renderSummary();});
+  wrap.innerHTML = dates.map((d,i)=>`<button type="button" class="date-chip ${i===0?'selected':''}" data-date="${isoDate(d)}" data-date-label="${fmtDate(d)}" title="${fullDate(d)}">${fmtDate(d)}</button>`).join('');
+  wrap.addEventListener('click',e=>{const b=e.target.closest('[data-date]'); if(!b) return; state.date=b.dataset.date; state.dateLabel=b.dataset.dateLabel; document.querySelectorAll('[data-date]').forEach(x=>x.classList.toggle('selected',x===b)); renderSummary();});
 }
 
 function bindInputs(){
@@ -199,7 +235,7 @@ function renderSummary(){
   }
   state.sideOnly.forEach((side,index)=>orderLines.push(`<div class="summary-line"><span class="summary-copy"><b>${escapeHtml(`Side · ${side}`)}</b></span><span class="summary-action"><strong>$5</strong><button type="button" data-remove-side="${index}" aria-label="Remove ${escapeHtml(side)}">×</button></span></div>`));
   if(orderLines.length===0) orderLines.push('<div class="summary-line"><span>Pick a plate or add sides</span><strong>—</strong></div>');
-  orderLines.push(`<div class="summary-line"><span>Pickup date</span><strong>${escapeHtml(state.date || '—')}</strong></div>`);
+  orderLines.push(`<div class="summary-line"><span>Pickup date</span><strong>${escapeHtml(state.dateLabel || '—')}</strong></div>`);
   if(state.name) orderLines.push(`<div class="summary-line"><span>Name</span><strong>${escapeHtml(state.name)}</strong></div>`);
   lines.innerHTML=orderLines.join('');
   totalEl.textContent = `$${total()}`;
@@ -210,13 +246,31 @@ function renderSummary(){
     button.disabled=!state.item;
   });
   const isValid=valid();
+  const api=checkoutApi();
   const square=(window.SQUARE_LINKS && state.item && window.SQUARE_LINKS[state.item.id]) || '';
   const squareEligible=Boolean(square && plateValid() && state.sideOnly.length===0);
-  btn.disabled=!isValid;
-  btn.textContent = !isValid ? 'FINISH THE STEPS ABOVE' : squareEligible ? 'CONTINUE TO SQUARE CHECKOUT →' : "TEXT ORDER — WE'LL SEND A PAYMENT LINK";
+  btn.disabled=!isValid || state.checkoutPending;
+  btn.textContent = state.checkoutPending
+    ? 'CREATING SECURE CHECKOUT…'
+    : !isValid ? 'FINISH THE STEPS ABOVE'
+    : api?.environment==='sandbox' ? 'CONTINUE TO SQUARE SANDBOX →'
+    : api ? 'CONTINUE TO SECURE SQUARE CHECKOUT →'
+    : squareEligible ? 'CONTINUE TO SQUARE CHECKOUT →'
+    : "TEXT ORDER — WE'LL SEND A PAYMENT LINK";
 }
 
-function checkout(){
+function smsOrderUrl(note){ return `sms:+${BUSINESS_PHONE}?&body=${encodeURIComponent(note)}`; }
+
+function checkoutPayload(){
+  const lines=[];
+  if(plateValid()) lines.push({id:state.item.id, qty:state.qty, sides:[...state.sides], meat:state.meat, note:state.note.trim()});
+  const sideCounts={};
+  state.sideOnly.forEach(side=>{ sideCounts[side]=(sideCounts[side]||0)+1; });
+  Object.entries(sideCounts).forEach(([side,qty])=>lines.push({id:SIDE_ONLY_IDS[side],qty}));
+  return {lines,date:state.date,name:state.name,phone:state.phone};
+}
+
+async function checkout(){
   if(!valid()) return;
   const orderLines=[];
   if(plateValid()){
@@ -224,13 +278,30 @@ function checkout(){
     orderLines.push(`${state.qty} x ${state.item.name} (${details}) — $${plateTotal()}`);
   }
   state.sideOnly.forEach(side=>orderLines.push(`1 x Side · ${side} — $5`));
-  const note=`Island Delicacy preorder:\n${orderLines.join('\n')}\nTotal: $${total()}\nPickup date: ${state.date}\nName: ${state.name}\nPhone: ${state.phone}\nWe'll text to set pickup time.`;
+  const note=`Island Delicacy preorder:\n${orderLines.join('\n')}\nTotal: $${total()}\nPickup date: ${state.dateLabel}\nName: ${state.name}\nPhone: ${state.phone}\nWe'll text to set pickup time.`;
+  const api=checkoutApi();
+  if(api){
+    state.checkoutPending=true; renderSummary();
+    try{
+      const response=await fetch(api.url,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(checkoutPayload())});
+      const data=await response.json().catch(()=>({}));
+      if(!response.ok || !safeSquareUrl(data.url,api.environment)) throw new Error(data.error || 'Square checkout unavailable');
+      sessionStorage.setItem('islandDelicacyLastOrder',JSON.stringify({phone:state.phone,date:state.date,name:state.name,orderId:data.orderId,environment:data.environment}));
+      window.location.assign(data.url);
+      return;
+    }catch(_error){
+      state.checkoutPending=false; renderSummary();
+      alert("Square checkout isn't available right now, so we're opening a complete text order instead.");
+      window.location.href=smsOrderUrl(note);
+      return;
+    }
+  }
   const square = plateValid() && state.sideOnly.length===0 && window.SQUARE_LINKS ? window.SQUARE_LINKS[state.item.id] || '' : '';
   if(square){
     const sep=square.includes('?')?'&':'?';
     window.open(`${square}${sep}note=${encodeURIComponent(note)}&quantity=${state.qty}`,'_blank','noopener');
   } else {
-    window.location.href = `sms:+${BUSINESS_PHONE}?&body=${encodeURIComponent(note)}`;
+    window.location.href = smsOrderUrl(note);
   }
 }
 
