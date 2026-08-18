@@ -79,6 +79,48 @@ test('prices every item server-side and treats extras as once per configured lin
   assert.match(request.payment_note, /Pickup 2026-08-05 · Test Customer · \+16195550100/);
 });
 
+test('preserves multiple configured plates and sides-only items in one Square checkout', () => {
+  const order = validateCheckout({
+    ...baseOrder,
+    lines: [
+      { id: 'jerk', qty: 1, sides: ['Steamed Cabbage', 'Sweet Plantains'], meat: false, note: 'no carrots' },
+      { id: 'chicken-rasta-pasta', qty: 2, sides: ['Rice & Peas', 'Steamed Cabbage'], meat: 'oxtail', note: 'light spice' },
+      { id: 'side-rasta-pasta', qty: 3 },
+    ],
+  }, new Date('2026-08-04T16:00:00Z'));
+
+  assert.equal(order.totalCents, 9100);
+  const request = buildSquarePaymentLinkRequest(order, {
+    SQUARE_LOCATION_ID: 'TEST_LOCATION',
+    CHECKOUT_REDIRECT_URL: 'https://islanddelicacy.com/order/?paid=1&sandbox=1',
+  }, 'idem-multi');
+  assert.deepEqual(
+    request.order.line_items.map((line) => [line.name, line.quantity, line.base_price_money.amount, line.note || '']),
+    [
+      ['Jerk Chicken', '1', 2000, 'Sides: Steamed Cabbage + Sweet Plantains · Note: no carrots'],
+      ['Chicken Rasta Pasta', '2', 2200, 'Sides: Rice & Peas + Steamed Cabbage · Note: light spice'],
+      ['Extra oxtail · Chicken Rasta Pasta', '1', 1200, 'For 2 × Chicken Rasta Pasta'],
+      ['Side · Rasta Pasta', '3', 500, ''],
+    ],
+  );
+});
+
+test('enforces the 30-item pickup-day request limit and 20-line payload limit', () => {
+  assert.throws(
+    () => validateCheckout({ ...baseOrder, lines: [
+      { id: 'side-steamed-cabbage', qty: 10 },
+      { id: 'side-sweet-plantains', qty: 10 },
+      { id: 'side-rasta-pasta', qty: 10 },
+      { id: 'side-rice-and-peas', qty: 1 },
+    ] }, new Date('2026-08-04T16:00:00Z')),
+    (error) => error instanceof ValidationError && error.code === 'ORDER_TOO_LARGE',
+  );
+  assert.throws(
+    () => validateCheckout({ ...baseOrder, lines: Array.from({ length: 21 }, () => ({ id: 'side-steamed-cabbage', qty: 1 })) }, new Date('2026-08-04T16:00:00Z')),
+    (error) => error instanceof ValidationError && error.code === 'TOO_MANY_LINES',
+  );
+});
+
 test('rejects late, malformed, and incomplete orders', () => {
   assert.throws(
     () => validateCheckout({ ...baseOrder, date: '2026-08-05' }, new Date('2026-08-04T17:00:00Z')),

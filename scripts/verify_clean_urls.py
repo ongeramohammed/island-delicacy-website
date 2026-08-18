@@ -136,8 +136,17 @@ def verify_order_design() -> list[str]:
         errors.append('main.js side images must declare intrinsic width="150" height="96"')
     if 'width="64" height="64"' not in main_js:
         errors.append('main.js plate thumbs must declare intrinsic width="64" height="64"')
-    if "DAILY MAX" not in main_js:
-        errors.append("main.js plate cards must label caps as 'N DAILY MAX'")
+    if "LIMITED DAILY" not in main_js:
+        errors.append("main.js plate cards must avoid unsupported per-item caps and say 'LIMITED DAILY'")
+    for required in (
+        "data-add-plate",
+        "data-remove-plate",
+        "state.cart",
+        "30 plates per pickup day",
+        "90 plates across the week",
+    ):
+        if required not in main_js and required not in order_html:
+            errors.append(f"multi-plate/capacity requirement missing: {required}")
     for name, text in (("main.js", main_js), ("menu.js", menu_js), ("order/index.html", order_html), ("styles.css", css)):
         if re.search(r"\bLEFT\b", text):
             errors.append(f"{name} claims live inventory ('LEFT' wording is prohibited)")

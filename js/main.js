@@ -10,7 +10,7 @@ const SIDE_ONLY_IDS = {
   'Rasta Pasta':'side-rasta-pasta',
   'Rice & Peas':'side-rice-and-peas'
 };
-const state = { item:null, sides:[], meat:false, qty:1, date:'', dateLabel:'', name:'', phone:'', note:'', sideOnly:[], checkoutPending:false };
+const state = { item:null, sides:[], meat:false, qty:1, date:'', dateLabel:'', name:'', phone:'', note:'', cart:[], sideOnly:[], checkoutPending:false };
 
 function laNow(){ return new Date(new Date().toLocaleString('en-US', { timeZone:'America/Los_Angeles' })); }
 function addDays(base, days){ const d = new Date(base); d.setDate(d.getDate()+days); return d; }
@@ -21,6 +21,27 @@ function isRastaPasta(item){ return item?.category === 'Rasta Pasta'; }
 function sidesFor(item){ return isRastaPasta(item) ? RASTA_SIDES : DEFAULT_SIDES; }
 function meatPrice(kind){ return kind === 'oxtail' ? 12 : kind === 'meat' ? 10 : 0; }
 function meatLabel(kind){ return kind === 'oxtail' ? 'extra oxtail' : kind === 'meat' ? 'extra meat' : ''; }
+function currentPlateLine(){
+  if(!plateValid()) return null;
+  return {id:state.item.id, name:state.item.name, price:state.item.price, qty:state.qty, sides:[...state.sides], meat:state.meat, note:state.note.trim()};
+}
+function configuredPlateTotal(line){ return (line.price * line.qty) + meatPrice(line.meat); }
+function committedPlateQuantity(){ return state.cart.reduce((sum,line)=>sum+line.qty,0); }
+function totalOrderQuantity(){ return committedPlateQuantity() + (state.item ? state.qty : 0) + state.sideOnly.length; }
+function clearCurrentPlate(){
+  state.item=null; state.sides=[]; state.meat=false; state.qty=1; state.note='';
+  const qty=document.querySelector('[data-qty-value]'); if(qty) qty.textContent='1';
+  renderSides(); updateCustomize(); renderChoicesSelected();
+}
+function addCurrentPlate(){
+  const line=currentPlateLine();
+  if(!line) return;
+  if(totalOrderQuantity()>30){ alert('Orders are limited to 30 total items for one pickup day.'); return; }
+  state.cart.push(line);
+  clearCurrentPlate();
+  renderSummary();
+  document.querySelector('[data-plate-choices]')?.scrollIntoView({behavior:'smooth',block:'start'});
+}
 
 function checkoutApi(){
   const config=window.ISLAND_CHECKOUT || {};
@@ -128,7 +149,7 @@ function renderChoices(){
   const wrap=document.querySelector('[data-plate-choices]');
   wrap.innerHTML = window.ISLAND_MENU.map(item => {
     const inclusion = isRastaPasta(item) ? 'rice & peas available as a side' : 'rice & peas included';
-    return `<div class="choice" data-choice-item="${item.id}"><button type="button" class="plate-thumb" data-zoom-item="${item.id}" aria-label="Enlarge ${escapeHtml(item.name)} photo" title="Tap to enlarge"><img src="${item.image}" alt="" loading="lazy" width="64" height="64"></button><button type="button" class="choice-pick" data-item="${item.id}" title="${escapeHtml(inclusion)}"><span class="choice-title"><span>${escapeHtml(item.name)}</span><span>$${item.price}</span></span><span class="choice-meta"><small>${escapeHtml(item.category)}</small><span class="cap-chip">${item.cap} DAILY MAX</span></span></button></div>`;
+    return `<div class="choice" data-choice-item="${item.id}"><button type="button" class="plate-thumb" data-zoom-item="${item.id}" aria-label="Enlarge ${escapeHtml(item.name)} photo" title="Tap to enlarge"><img src="${item.image}" alt="" loading="lazy" width="64" height="64"></button><button type="button" class="choice-pick" data-item="${item.id}" title="${escapeHtml(inclusion)}"><span class="choice-title"><span>${escapeHtml(item.name)}</span><span>$${item.price}</span></span><span class="choice-meta"><small>${escapeHtml(item.category)}</small><span class="cap-chip">LIMITED DAILY</span></span></button></div>`;
   }).join('');
   wrap.addEventListener('click', e=>{
     const zoom=e.target.closest('[data-zoom-item]');
@@ -186,6 +207,7 @@ function renderSideOnlyButtons(){
   wrap.innerHTML=SIDE_ONLY_OPTIONS.map(side=>`<button type="button" class="toggle-chip" data-add-side="${side}">＋ ${side} — $5</button>`).join('');
   wrap.addEventListener('click',e=>{
     const button=e.target.closest('[data-add-side]'); if(!button) return;
+    if(totalOrderQuantity()>=30){ alert('Orders are limited to 30 total items for one pickup day.'); return; }
     state.sideOnly.push(button.dataset.addSide);
     renderSummary();
   });
@@ -205,33 +227,43 @@ function bindInputs(){
   }));
   document.querySelector('[name="plateNote"]')?.addEventListener('input',e=>{state.note=e.target.value.slice(0,200); renderSummary();});
   document.querySelector('[data-qty-minus]')?.addEventListener('click',()=>{state.qty=Math.max(1,state.qty-1); document.querySelector('[data-qty-value]').textContent=state.qty; renderSummary();});
-  document.querySelector('[data-qty-plus]')?.addEventListener('click',()=>{state.qty=Math.min(10,state.qty+1); document.querySelector('[data-qty-value]').textContent=state.qty; renderSummary();});
+  document.querySelector('[data-qty-plus]')?.addEventListener('click',()=>{
+    const otherItems=committedPlateQuantity()+state.sideOnly.length;
+    state.qty=Math.min(10,Math.max(1,30-otherItems),state.qty+1);
+    document.querySelector('[data-qty-value]').textContent=state.qty; renderSummary();
+  });
+  document.querySelector('[data-add-plate]')?.addEventListener('click',addCurrentPlate);
   document.querySelector('[name="customerName"]')?.addEventListener('input',e=>{state.name=e.target.value.trim(); renderSummary();});
   document.querySelector('[name="customerPhone"]')?.addEventListener('input',e=>{state.phone=e.target.value.trim(); renderSummary();});
   document.querySelector('[data-summary-lines]')?.addEventListener('click',e=>{
-    const button=e.target.closest('[data-remove-side]'); if(!button) return;
-    state.sideOnly.splice(Number(button.dataset.removeSide),1); renderSummary();
+    const sideButton=e.target.closest('[data-remove-side]');
+    if(sideButton){ state.sideOnly.splice(Number(sideButton.dataset.removeSide),1); renderSummary(); return; }
+    const plateButton=e.target.closest('[data-remove-plate]');
+    if(plateButton){ state.cart.splice(Number(plateButton.dataset.removePlate),1); renderSummary(); return; }
+    if(e.target.closest('[data-remove-current-plate]')){ clearCurrentPlate(); renderSummary(); }
   });
   document.querySelector('[data-checkout]')?.addEventListener('click', checkout);
 }
 
 function plateValid(){ return Boolean(state.item && state.sides.length===2); }
 function valid(){
-  const hasOrder=plateValid() || state.sideOnly.length>0;
-  const plateIsComplete=!state.item || plateValid();
-  return hasOrder && plateIsComplete && state.date && state.name.length>1 && state.phone.length>6;
+  const hasOrder=state.cart.length>0 || plateValid() || state.sideOnly.length>0;
+  const currentPlateIsComplete=!state.item || plateValid();
+  return hasOrder && currentPlateIsComplete && totalOrderQuantity()<=30 && state.date && state.name.length>1 && state.phone.length>6;
 }
-function plateTotal(){ return state.item ? (state.item.price * state.qty) + meatPrice(state.meat) : 0; }
-function total(){ return plateTotal() + state.sideOnly.length*5; }
+function plateTotal(){ return state.item ? configuredPlateTotal({price:state.item.price,qty:state.qty,meat:state.meat}) : 0; }
+function total(){ return state.cart.reduce((sum,line)=>sum+configuredPlateTotal(line),0) + plateTotal() + state.sideOnly.length*5; }
+function plateDetails(line){ return [...line.sides, meatLabel(line.meat), line.note?.trim()].filter(Boolean).map(escapeHtml).join(' · '); }
 
 function renderSummary(){
   const lines=document.querySelector('[data-summary-lines]'), totalEl=document.querySelector('[data-total]'), btn=document.querySelector('[data-checkout]'); if(!lines) return;
   const orderLines=[];
+  state.cart.forEach((line,index)=>{
+    orderLines.push(`<div class="summary-line committed"><span class="summary-copy"><b>${line.qty} × ${escapeHtml(line.name)}</b><small>${plateDetails(line)}</small></span><span class="summary-action"><strong>$${configuredPlateTotal(line)}</strong><button type="button" data-remove-plate="${index}" aria-label="Remove ${escapeHtml(line.name)}">×</button></span></div>`);
+  });
   if(state.item){
-    const details=plateValid()
-      ? [...state.sides, meatLabel(state.meat), state.note.trim()].filter(Boolean).map(escapeHtml).join(' · ')
-      : `Choose 2 sides (${state.sides.length}/2)`;
-    orderLines.push(`<div class="summary-line"><span class="summary-copy"><b>${state.qty} × ${escapeHtml(state.item.name)}</b><small>${details}</small></span><strong>$${plateTotal()}</strong></div>`);
+    const details=plateValid() ? plateDetails({sides:state.sides,meat:state.meat,note:state.note}) : `Choose 2 sides (${state.sides.length}/2)`;
+    orderLines.push(`<div class="summary-line current"><span class="summary-copy"><b>${state.qty} × ${escapeHtml(state.item.name)}</b><small>${details}</small></span><span class="summary-action"><strong>$${plateTotal()}</strong><button type="button" data-remove-current-plate aria-label="Remove ${escapeHtml(state.item.name)}">×</button></span></div>`);
   }
   state.sideOnly.forEach((side,index)=>orderLines.push(`<div class="summary-line"><span class="summary-copy"><b>${escapeHtml(`Side · ${side}`)}</b></span><span class="summary-action"><strong>$5</strong><button type="button" data-remove-side="${index}" aria-label="Remove ${escapeHtml(side)}">×</button></span></div>`));
   if(orderLines.length===0) orderLines.push('<div class="summary-line"><span>Pick a plate or add sides</span><strong>—</strong></div>');
@@ -245,10 +277,17 @@ function renderSummary(){
     button.setAttribute('aria-pressed',String(active));
     button.disabled=!state.item;
   });
+  const addPlateButton=document.querySelector('[data-add-plate]');
+  if(addPlateButton){
+    addPlateButton.disabled=!plateValid() || totalOrderQuantity()>30;
+    addPlateButton.setAttribute('aria-disabled',String(addPlateButton.disabled));
+  }
+  const count=document.querySelector('[data-order-count]');
+  if(count) count.textContent=`${committedPlateQuantity() + (state.item ? state.qty : 0)} of 30 plates for this pickup day`;
   const isValid=valid();
   const api=checkoutApi();
   const square=(window.SQUARE_LINKS && state.item && window.SQUARE_LINKS[state.item.id]) || '';
-  const squareEligible=Boolean(square && plateValid() && state.sideOnly.length===0);
+  const squareEligible=Boolean(square && state.cart.length===0 && plateValid() && state.sideOnly.length===0);
   btn.disabled=!isValid || state.checkoutPending;
   btn.textContent = state.checkoutPending
     ? 'CREATING SECURE CHECKOUT…'
@@ -262,8 +301,9 @@ function renderSummary(){
 function smsOrderUrl(note){ return `sms:+${BUSINESS_PHONE}?&body=${encodeURIComponent(note)}`; }
 
 function checkoutPayload(){
-  const lines=[];
-  if(plateValid()) lines.push({id:state.item.id, qty:state.qty, sides:[...state.sides], meat:state.meat, note:state.note.trim()});
+  const lines=state.cart.map(line=>({id:line.id,qty:line.qty,sides:[...line.sides],meat:line.meat,note:line.note}));
+  const current=currentPlateLine();
+  if(current) lines.push({id:current.id,qty:current.qty,sides:[...current.sides],meat:current.meat,note:current.note});
   const sideCounts={};
   state.sideOnly.forEach(side=>{ sideCounts[side]=(sideCounts[side]||0)+1; });
   Object.entries(sideCounts).forEach(([side,qty])=>lines.push({id:SIDE_ONLY_IDS[side],qty}));
@@ -273,10 +313,12 @@ function checkoutPayload(){
 async function checkout(){
   if(!valid()) return;
   const orderLines=[];
-  if(plateValid()){
-    const details=[`sides: ${state.sides.join(' + ')}`, meatLabel(state.meat), state.note.trim() ? `note: ${state.note.trim()}` : ''].filter(Boolean).join('; ');
-    orderLines.push(`${state.qty} x ${state.item.name} (${details}) — $${plateTotal()}`);
-  }
+  const allPlates=[...state.cart];
+  const current=currentPlateLine(); if(current) allPlates.push(current);
+  allPlates.forEach(line=>{
+    const details=[`sides: ${line.sides.join(' + ')}`, meatLabel(line.meat), line.note ? `note: ${line.note}` : ''].filter(Boolean).join('; ');
+    orderLines.push(`${line.qty} x ${line.name} (${details}) — $${configuredPlateTotal(line)}`);
+  });
   state.sideOnly.forEach(side=>orderLines.push(`1 x Side · ${side} — $5`));
   const note=`Island Delicacy preorder:\n${orderLines.join('\n')}\nTotal: $${total()}\nPickup date: ${state.dateLabel}\nName: ${state.name}\nPhone: ${state.phone}\nWe'll text to set pickup time.`;
   const api=checkoutApi();
@@ -296,7 +338,7 @@ async function checkout(){
       return;
     }
   }
-  const square = plateValid() && state.sideOnly.length===0 && window.SQUARE_LINKS ? window.SQUARE_LINKS[state.item.id] || '' : '';
+  const square = state.cart.length===0 && plateValid() && state.sideOnly.length===0 && window.SQUARE_LINKS ? window.SQUARE_LINKS[state.item.id] || '' : '';
   if(square){
     const sep=square.includes('?')?'&':'?';
     window.open(`${square}${sep}note=${encodeURIComponent(note)}&quantity=${state.qty}`,'_blank','noopener');
