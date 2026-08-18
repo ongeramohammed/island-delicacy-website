@@ -23,5 +23,5 @@ window.SQUARE_LINKS = {
   'chicken-rasta-pasta':'', 'shrimp-rasta-pasta':'', 'oxtail-rasta-pasta':'', 'curry-shrimp':'', 'escovitch-fish':''
 };
 // The Sandbox endpoint is used only when the order page has ?sandbox=1.
-// Production stays empty until Shantay approves a real-money cutover.
-window.ISLAND_CHECKOUT = Object.assign({sandbox:'https://island-delicacy-checkout-sandbox.jonathan-bruce369-3a2.workers.dev/api/checkout', production:''}, window.ISLAND_CHECKOUT || {});
+// The explicit Production endpoint activates real Square checkout on the normal order page.
+window.ISLAND_CHECKOUT = Object.assign({sandbox:'https://island-delicacy-checkout-sandbox.jonathan-bruce369-3a2.workers.dev/api/checkout', production:'https://island-delicacy-checkout.jonathan-bruce369-3a2.workers.dev/api/checkout'}, window.ISLAND_CHECKOUT || {});
