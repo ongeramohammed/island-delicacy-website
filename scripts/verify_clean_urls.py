@@ -200,12 +200,23 @@ def verify_about() -> list[str]:
         "Shantay Cole learned to cook from her mother",
         "Navy culinary specialist strengthened the discipline and consistency",
         "a love of cooking that started at home",
+        "/assets/gallery/shantay-owner.webp",
+        'width="1200" height="1500"',
+        "/css/styles.css?v=20260818-shantay-photo-1",
     ):
         if required not in html:
             errors.append(f"about/index.html missing approved story correction: {required}")
     for forbidden in ("learned to cook in the Navy", "Navy-trained"):
         if forbidden in html:
             errors.append(f"about/index.html still misattributes Shantay's cooking origin: {forbidden}")
+    portrait = ROOT / "assets" / "gallery" / "shantay-owner.webp"
+    if not portrait.is_file():
+        errors.append("about portrait is missing: assets/gallery/shantay-owner.webp")
+    elif portrait.stat().st_size > 250_000:
+        errors.append("about portrait exceeds the 250 KB performance budget")
+    css = (ROOT / "css" / "styles.css").read_text(encoding="utf-8")
+    if ".owner-photo{width:100%;height:auto;" not in css:
+        errors.append("about portrait must scale responsively instead of using intrinsic pixel height")
     return errors
 
 
