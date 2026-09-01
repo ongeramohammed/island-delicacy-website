@@ -120,6 +120,7 @@ function validateLine(line) {
   if (meat !== false && !Object.hasOwn(EXTRA_PRICES, meat)) fail('INVALID_EXTRA', 'The extra-meat selection is invalid.');
   return {
     kind: 'plate', id, name: item.name, qty, priceCents: item.priceCents,
+    rastaPasta: item.rastaPasta,
     sides: validateSides(line.sides, item), meat,
     extraCents: meat ? EXTRA_PRICES[meat] : 0,
     note: cleanOptionalText(line.note, 200, 'note'),
@@ -172,8 +173,13 @@ export function buildSquarePaymentLinkRequest(order, env, idempotencyKey) {
       continue;
     }
 
-    const details = [`Sides: ${line.sides.join(' + ')}`];
-    if (line.note) details.push(`Note: ${line.note}`);
+    // Shantay must not have to remember a hidden default, so the included base item
+    // is stated on every plate line — including its explicit absence on rasta pasta.
+    const details = [
+      `Includes: ${line.rastaPasta ? 'No rice & peas (rasta pasta)' : 'Rice & Peas'}`,
+      `Sides: ${line.sides.join(' + ')}`,
+    ];
+    if (line.note) details.push(`Leave off / requests: ${line.note}`);
     lineItems.push(lineItem(line.name, line.qty, line.priceCents, details.join(' · ')));
     if (line.meat) {
       const extraName = line.meat === 'oxtail' ? 'Extra oxtail' : 'Extra meat';

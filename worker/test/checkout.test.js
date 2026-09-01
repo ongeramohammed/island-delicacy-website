@@ -97,8 +97,8 @@ test('preserves multiple configured plates and sides-only items in one Square ch
   assert.deepEqual(
     request.order.line_items.map((line) => [line.name, line.quantity, line.base_price_money.amount, line.note || '']),
     [
-      ['Jerk Chicken', '1', 2000, 'Sides: Steamed Cabbage + Sweet Plantains · Note: no carrots'],
-      ['Chicken Rasta Pasta', '2', 2200, 'Sides: Rice & Peas + Steamed Cabbage · Note: light spice'],
+      ['Jerk Chicken', '1', 2000, 'Includes: Rice & Peas · Sides: Steamed Cabbage + Sweet Plantains · Leave off / requests: no carrots'],
+      ['Chicken Rasta Pasta', '2', 2200, 'Includes: No rice & peas (rasta pasta) · Sides: Rice & Peas + Steamed Cabbage · Leave off / requests: light spice'],
       ['Extra oxtail · Chicken Rasta Pasta', '1', 1200, 'For 2 × Chicken Rasta Pasta'],
       ['Side · Rasta Pasta', '3', 500, ''],
     ],
@@ -134,4 +134,95 @@ test('rejects late, malformed, and incomplete orders', () => {
     () => validateCheckout({ ...baseOrder, lines: [] }, new Date('2026-08-04T16:00:00Z')),
     (error) => error instanceof ValidationError && error.code === 'EMPTY_ORDER',
   );
+});
+
+test('every Square plate line states the included base item so nothing depends on memory', () => {
+  const order = validateCheckout({
+    lines: [
+      { id: 'jerk', qty: 1, sides: ['Steamed Cabbage', 'Sweet Plantains'], meat: false, note: '' },
+      { id: 'oxtail-rasta-pasta', qty: 1, sides: ['Rice & Peas', 'Sweet Plantains'], meat: false, note: '' },
+    ],
+    date: '2026-08-05', name: 'Test Customer', phone: '(619) 555-0100',
+  }, new Date('2026-08-04T16:00:00Z'));
+
+  const request = buildSquarePaymentLinkRequest(order, {
+    SQUARE_LOCATION_ID: 'TEST_LOCATION', CHECKOUT_REDIRECT_URL: 'https://islanddelicacy.com/order/?paid=1',
+  }, 'idem-includes');
+
+  assert.deepEqual(request.order.line_items.map((line) => line.note), [
+    'Includes: Rice & Peas · Sides: Steamed Cabbage + Sweet Plantains',
+    'Includes: No rice & peas (rasta pasta) · Sides: Rice & Peas + Sweet Plantains',
+  ]);
+  // No plate line may omit the Includes clause, whichever way it reads.
+  for (const line of request.order.line_items) assert.match(line.note, /^Includes: /);
+});
+
+test('a maximum-length leave-off request survives whole and stays inside Square note limits', () => {
+  const note = 'x'.repeat(200);
+  const order = validateCheckout({
+    lines: [{ id: 'oxtail-rasta-pasta', qty: 1, sides: ['Rice & Peas', 'Steamed Cabbage'], meat: 'oxtail', note }],
+    date: '2026-08-05', name: 'Test Customer', phone: '(619) 555-0100',
+  }, new Date('2026-08-04T16:00:00Z'));
+
+  const request = buildSquarePaymentLinkRequest(order, {
+    SQUARE_LOCATION_ID: 'TEST_LOCATION', CHECKOUT_REDIRECT_URL: 'https://islanddelicacy.com/order/?paid=1',
+  }, 'idem-longnote');
+
+  const plateNote = request.order.line_items[0].note;
+  assert.ok(plateNote.endsWith(`Leave off / requests: ${note}`), 'the request must not be truncated');
+  // Square caps OrderLineItem.note at 500 characters; the longest note we can build
+  // is the rasta-pasta prefix plus a full 200-character request.
+  assert.ok(plateNote.length < 500, `note length ${plateNote.length} must stay under the Square 500-char limit`);
+  assert.deepEqual(request.order.line_items.map((line) => line.name), ['Oxtail Rasta Pasta', 'Extra oxtail · Oxtail Rasta Pasta']);
+});
+
+test('side-only lines stay identifiable, correctly priced, and carry no plate customization', () => {
+  const order = validateCheckout({
+    lines: [{ id: 'side-rice-and-peas', qty: 4 }, { id: 'side-sweet-plantains', qty: 1 }],
+    date: '2026-08-05', name: 'Test Customer', phone: '(619) 555-0100',
+  }, new Date('2026-08-04T16:00:00Z'));
+
+  assert.equal(order.totalCents, 2500);
+  const request = buildSquarePaymentLinkRequest(order, {
+    SQUARE_LOCATION_ID: 'TEST_LOCATION', CHECKOUT_REDIRECT_URL: 'https://islanddelicacy.com/order/?paid=1',
+  }, 'idem-sides');
+  assert.deepEqual(request.order.line_items, [
+    { name: 'Side · Rice & Peas', quantity: '4', base_price_money: { amount: 500, currency: 'USD' } },
+    { name: 'Side · Sweet Plantains', quantity: '1', base_price_money: { amount: 500, currency: 'USD' } },
+  ]);
+});
+
+test('the client cannot set a price or smuggle an invalid side combination past the server', () => {
+  const order = validateCheckout({
+    lines: [{ id: 'jerk', qty: 1, sides: ['Steamed Cabbage', 'Sweet Plantains'], meat: false, note: '', priceCents: 1, price: 1 }],
+    date: '2026-08-05', name: 'Test Customer', phone: '(619) 555-0100', totalCents: 1,
+  }, new Date('2026-08-04T16:00:00Z'));
+  assert.equal(order.totalCents, 2000, 'server pricing must ignore any client-supplied price');
+
+  for (const sides of [['Rice & Peas', 'Steamed Cabbage'], ['Steamed Cabbage'], ['Steamed Cabbage', 'Steamed Cabbage'], ['Steamed Cabbage', 'Macaroni Pie']]) {
+    assert.throws(
+      () => validateCheckout({ lines: [{ id: 'jerk', qty: 1, sides, meat: false, note: '' }], date: '2026-08-05', name: 'Test Customer', phone: '(619) 555-0100' }, new Date('2026-08-04T16:00:00Z')),
+      (error) => error instanceof ValidationError && error.code === 'INVALID_SIDES',
+      `sides ${JSON.stringify(sides)} must be rejected`,
+    );
+  }
+});
+
+test('a 20-line / 30-item order keeps every plate a separate Square line with its own note', () => {
+  const lines = Array.from({ length: 15 }, (_, index) => ({
+    id: 'jerk', qty: 2,
+    sides: index % 2 ? ['Steamed Cabbage', 'Rasta Pasta'] : ['Steamed Cabbage', 'Sweet Plantains'],
+    meat: false, note: `leave off item ${index}`,
+  }));
+  const order = validateCheckout({ lines, date: '2026-08-05', name: 'Test Customer', phone: '(619) 555-0100' }, new Date('2026-08-04T16:00:00Z'));
+  assert.equal(order.totalCents, 60000);
+
+  const request = buildSquarePaymentLinkRequest(order, {
+    SQUARE_LOCATION_ID: 'TEST_LOCATION', CHECKOUT_REDIRECT_URL: 'https://islanddelicacy.com/order/?paid=1',
+  }, 'idem-dense');
+  assert.equal(request.order.line_items.length, 15, 'identical-looking plates must not be merged');
+  assert.equal(new Set(request.order.line_items.map((line) => line.note)).size, 15);
+  assert.equal(request.order.line_items[0].note, 'Includes: Rice & Peas · Sides: Steamed Cabbage + Sweet Plantains · Leave off / requests: leave off item 0');
+  assert.equal(request.order.line_items[13].note, 'Includes: Rice & Peas · Sides: Steamed Cabbage + Rasta Pasta · Leave off / requests: leave off item 13');
+  assert.equal(request.order.line_items[14].note, 'Includes: Rice & Peas · Sides: Steamed Cabbage + Sweet Plantains · Leave off / requests: leave off item 14');
 });

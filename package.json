@@ -1,0 +1,9 @@
+{
+  "name": "island-delicacy-website",
+  "private": true,
+  "description": "Static site tests. The Cloudflare Worker has its own package in worker/.",
+  "scripts": {
+    "test": "node --test tests/order-format.test.mjs",
+    "test:ui": "node tests/order-ui.browser.mjs"
+  }
+}

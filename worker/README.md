@@ -9,6 +9,26 @@ This Cloudflare Worker creates Square-hosted checkout links for the static order
 
 The production environment is separate and must not be enabled in `js/menu.js` until the Sandbox flow passes and Shantay approves real-money cutover.
 
+## What the customer is guaranteed to see, and what Square may show
+
+These are deliberately separate, and only the first is a guarantee.
+
+**Guaranteed by this site.** Before any payment link is created, the order page shows
+a review sheet listing every plate with `Includes`, `Your sides`, `Extras` and
+`Leave off / requests`, plus the pickup date, name, phone and total. After Square
+returns, the same order is re-rendered from a privacy-minimized `sessionStorage`
+receipt. Both surfaces and the text-order fallback render from `js/order-format.js`,
+so they cannot disagree. This is covered by `tests/order-ui.browser.mjs`.
+
+**Not guaranteed.** Whether Square's hosted checkout renders `OrderLineItem.note` to
+the buyer is **unverified**. We send it — every plate line carries
+`Includes: … · Sides: … · Leave off / requests: …` so the kitchen ticket and the
+Square dashboard are unambiguous — but no claim is made about the buyer-facing
+Square page. Do not tell a customer "you can check your sides on Square." The
+first-party review sheet exists precisely so that customer visibility does not
+depend on Square's UI. If Square's rendering is ever confirmed, document the
+evidence here before relying on it.
+
 ## Local test
 
 Copy `.dev.vars.example` to `.dev.vars`, fill it locally, and keep it untracked.

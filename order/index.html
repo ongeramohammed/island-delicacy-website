@@ -16,7 +16,7 @@
   <link rel="icon" href="/favicon.ico">
   <link rel="apple-touch-icon" href="/assets/icons/apple-touch-icon.png">
   <link rel="manifest" href="/site.webmanifest">
-  <link rel="stylesheet" href="/css/styles.css?v=20260818-multi-plate-1">
+  <link rel="stylesheet" href="/css/styles.css?v=20260831-order-clarity-1">
 </head>
 <body>
 <div class="announcement" data-cutoff-bar>Orders close at 10:00 AM daily</div>
@@ -27,7 +27,7 @@
     <div class="nav-links">
       <a href="/" class="">Home</a><a href="/order/" class="active">Order</a><a href="/catering/" class="">Catering</a><a href="/about/" class="">About</a><a href="/faq/" class="">FAQ</a>
     </div>
-    <div class="nav-actions"><a class="phone" href="tel:+19297424202">(929) 742-4202</a><a class="btn btn-primary" href="/order/">Order for <span data-earliest-label>tomorrow</span></a></div>
+    <div class="nav-actions"><a class="phone" href="tel:+19297424202">(929) 742-4202</a><a class="btn btn-cream" href="/order/">Order for <span data-earliest-label>tomorrow</span></a></div>
   </nav>
 </header>
 <main data-order-app>
@@ -39,11 +39,33 @@
       <div class="order-section"><h2>3. Quantity, add more + pickup date</h2><div class="quantity-actions"><div class="quantity"><button type="button" data-qty-minus aria-label="Decrease quantity">−</button><span class="qty-value" data-qty-value>1</span><button type="button" data-qty-plus aria-label="Increase quantity">+</button></div><button type="button" class="toggle-chip add-plate-button" data-add-plate disabled>＋ Add & pick another plate</button></div><p class="muted add-plate-help">Ordering more than one dish? Finish this plate, add it to your preorder, then pick the next one. Everything checks out together.</p><p class="capacity-note"><strong>Kitchen capacity:</strong> up to 30 plates per pickup day and no more than 90 plates across the week. <span data-order-count>0 of 30 plates for this pickup day</span>.</p><div class="date-chips" data-date-chips style="margin-top:16px"></div><p class="lead" style="font-size:16px"><em>We'll text you the day of to set your pickup time.</em></p></div>
       <div class="order-section"><h2>4. Your details</h2><div class="fields"><div class="field"><label for="customerName">Name</label><input id="customerName" name="customerName" autocomplete="name" required></div><div class="field"><label for="customerPhone">Phone</label><input id="customerPhone" name="customerPhone" autocomplete="tel" required></div></div></div>
       <div class="soon"><strong>Coming soon — text to request:</strong> Island Bowls · Oxtail Tacos ($26) · Jerk Chicken Tacos ($22) · Jamaican Breakfast.</div>
-      <div class="success hidden" data-confirmation><h2>Square checkout returned.</h2><p data-confirmation-message>Keep your Square receipt. We'll text you at the phone number on your order on pickup day.</p></div>
+      <div class="success hidden" data-confirmation data-od-id="order-return-receipt"><h2>Square checkout returned.</h2><p data-confirmation-message>Keep your Square receipt. We'll text you at the phone number on your order on pickup day.</p><div class="receipt hidden" data-receipt-body><p class="receipt-lead">This is the preorder you submitted:</p><div data-receipt-lines></div><div class="summary-meta" data-receipt-meta></div><div class="summary-total"><span>Total</span><span data-receipt-total>$0</span></div></div></div>
     </div>
-    <aside class="summary" aria-live="polite"><img src="/assets/brand/logo-gold.png" alt="Island Delicacy"><h2>Your preorder</h2><div data-summary-lines></div><div class="summary-total"><span>Total</span><span data-total>$0</span></div><button class="btn checkout" type="button" data-checkout disabled>Finish the steps above</button><p>Secure payment via Square · no account needed. Orders without a connected Square link fall back to text.</p></aside>
+    <aside class="summary" aria-live="polite" data-od-id="order-summary-panel"><img src="/assets/brand/logo-gold.png" alt="Island Delicacy"><div class="summary-head"><h2>Your preorder</h2><span class="summary-count" data-summary-count>Nothing added yet</span></div><div data-summary-lines></div><div class="summary-total"><span>Total</span><span data-total>$0</span></div><button class="btn checkout" type="button" data-checkout data-od-id="order-review-open" disabled>Finish the steps above</button><p>You get to check every plate — sides, extras and anything you asked us to leave off — before any payment link is created. Secure payment via Square · no account needed.</p></aside>
   </section>
-</main><footer class="footer">
+</main>
+<div class="review-scrim hidden" data-review-scrim>
+  <div class="review-sheet" role="dialog" aria-modal="true" aria-labelledby="reviewTitle" tabindex="-1" data-review-dialog data-od-id="order-review-dialog">
+    <div class="review-head">
+      <button class="review-close" type="button" data-review-close aria-label="Close review and keep editing your order">×</button>
+      <p class="eyebrow">Nothing has been sent to Square yet</p>
+      <h2 id="reviewTitle">Check your order before you pay</h2>
+      <div class="review-pickup" data-review-pickup></div>
+    </div>
+    <div class="review-scroll" tabindex="0" role="region" aria-label="Every plate and side in your preorder" data-review-lines></div>
+    <p class="review-scroll-hint hidden" data-review-scroll-hint>Scroll for the rest of your order — the total and pay button stay put</p>
+    <div class="review-foot">
+      <p class="review-count" data-review-count></p>
+      <div class="summary-total"><span>Total<span class="review-total-qualifier"> due at Square</span></span><span data-review-total>$0</span></div>
+      <div class="review-actions">
+        <button class="btn review-edit" type="button" data-review-close data-od-id="order-review-edit">Edit order</button>
+        <button class="btn review-confirm" type="button" data-review-confirm data-od-id="order-review-confirm">Confirm &amp; pay →</button>
+      </div>
+      <p class="review-note" data-review-note></p>
+    </div>
+  </div>
+</div>
+<footer class="footer">
   <div class="container">
     <div><img src="/assets/brand/logo-gold.png" alt="Island Delicacy"><p>Fresh Caribbean comfort food in San Diego, cooked by preorder only. Orders close 10 AM daily.</p></div>
     <div><h3>Pages</h3><a href="/">Home</a><a href="/order/">Order</a><a href="/catering/">Catering</a><a href="/about/">About</a><a href="/faq/">FAQ / Contact</a></div>
@@ -51,6 +73,7 @@
   </div>
 </footer>
 <script src="/js/menu.js?v=20260818-square-production-1"></script>
-<script src="/js/main.js?v=20260818-multi-plate-1"></script>
+<script src="/js/order-format.js?v=20260831-order-clarity-1"></script>
+<script src="/js/main.js?v=20260831-order-clarity-1"></script>
 </body>
 </html>

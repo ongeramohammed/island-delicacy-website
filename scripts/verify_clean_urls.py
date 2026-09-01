@@ -153,6 +153,86 @@ def verify_order_design() -> list[str]:
     return errors
 
 
+def verify_order_clarity() -> list[str]:
+    """Grouped plate summary, a review before Square, and an exact return receipt."""
+    errors: list[str] = []
+    css = (ROOT / "css" / "styles.css").read_text(encoding="utf-8")
+    main_js = (ROOT / "js" / "main.js").read_text(encoding="utf-8")
+    order_html = (ROOT / "order" / "index.html").read_text(encoding="utf-8")
+    checkout_js = (ROOT / "worker" / "src" / "checkout.js").read_text(encoding="utf-8")
+
+    fmt = ROOT / "js" / "order-format.js"
+    if not fmt.is_file():
+        errors.append("missing js/order-format.js: every customer-facing surface must share one serialization")
+        return errors
+    fmt_js = fmt.read_text(encoding="utf-8")
+
+    # The fixed group vocabulary, shared by sidebar, review sheet, receipt and text fallback.
+    for label in ("'Includes'", "'Your sides'", "'Extras'", "'Leave off / requests'", "'Sides only'"):
+        if label not in fmt_js:
+            errors.append(f"order-format.js is missing the fixed group label {label}")
+    for answered in ("No rice & peas — rasta pasta plate", "Nothing — cook it as it comes", "'None'"):
+        if answered not in fmt_js:
+            errors.append(f"order-format.js must answer an empty group rather than leaving it blank: {answered}")
+
+    if '<script src="/js/order-format.js' not in order_html:
+        errors.append("order/index.html must load js/order-format.js before js/main.js")
+    if order_html.index("order-format.js") > order_html.index("/js/main.js"):
+        errors.append("js/order-format.js must be loaded before js/main.js")
+
+    # The review is a hard gate: the builder button opens it, only Confirm can pay.
+    for required, why in (
+        ("data-review-dialog", "the pre-Square review dialog must exist in the markup"),
+        ('role="dialog"', "the review must be an actual dialog for assistive technology"),
+        ('aria-modal="true"', "the review dialog must be modal"),
+        ("data-review-confirm", "the review needs an explicit Confirm action"),
+        ("data-review-close", "the review needs an explicit Edit/close action"),
+        ("data-receipt-lines", "the Square return must render the submitted order lines"),
+        ("data-receipt-total", "the Square return must render the submitted total"),
+    ):
+        if required not in order_html:
+            errors.append(f"order/index.html missing order-clarity requirement ({why}): {required}")
+
+    if "addEventListener('click', openReview)" not in main_js:
+        errors.append("main.js: the summary checkout button must open the review, never fetch directly")
+    if "addEventListener('click', confirmAndPay)" not in main_js:
+        errors.append("main.js: only the review Confirm button may start checkout")
+    if "fetch(" in main_js and "async function confirmAndPay()" not in main_js:
+        errors.append("main.js: the checkout fetch must live in confirmAndPay, behind the review")
+    for required in ("function openReview()", "function closeReview()", "function reviewKeydown(", "reviewOpener"):
+        if required not in main_js:
+            errors.append(f"main.js missing review focus/keyboard contract: {required}")
+    if "'Escape'" not in main_js:
+        errors.append("main.js: the review dialog must close on Escape")
+    if "receiptFor" not in main_js or "modelFromReceipt" not in main_js:
+        errors.append("main.js must store and re-render the privacy-minimized receipt")
+    if "phoneLast4" not in fmt_js:
+        errors.append("the stored receipt must keep only the last four phone digits")
+
+    # Merchant truth: every Square plate line states the included base item.
+    if "Includes: ${line.rastaPasta ? 'No rice & peas (rasta pasta)' : 'Rice & Peas'}" not in checkout_js:
+        errors.append("worker/src/checkout.js must state the included base item on every Square plate line")
+    if "Leave off / requests: ${line.note}" not in checkout_js:
+        errors.append("worker/src/checkout.js must label the customer request unambiguously for the kitchen")
+
+    for required, why in (
+        (".ticket-spec{display:grid;grid-template-columns:98px minmax(0,1fr)", "plate specs must be a two-column labelled list"),
+        (".ticket-spec dd.is-empty{", "answered-empty values need their own quiet treatment"),
+        ("body.review-open{overflow:hidden}", "the page behind the review must not scroll"),
+        (".review-scroll{flex:1 1 auto;min-height:0;overflow-y:auto", "the review body must scroll independently so the total and pay button stay pinned"),
+        (".review-close:focus-visible", "every review control needs a visible focus ring"),
+        (".review-confirm:focus-visible", "every review control needs a visible focus ring"),
+    ):
+        if required not in css:
+            errors.append(f"styles.css missing order-clarity requirement ({why}): {required}")
+
+    if not (ROOT / "tests" / "order-format.test.mjs").is_file():
+        errors.append("missing tests/order-format.test.mjs")
+    if not (ROOT / "tests" / "order-ui.browser.mjs").is_file():
+        errors.append("missing tests/order-ui.browser.mjs")
+    return errors
+
+
 def verify_catering() -> list[str]:
     """Approved tray pricing and catering copy must be present and current."""
     errors: list[str] = []
@@ -250,13 +330,13 @@ def verify_http() -> list[str]:
 
 
 def main() -> int:
-    errors = verify_files() + verify_order_design() + verify_catering() + verify_about() + verify_http()
+    errors = verify_files() + verify_order_design() + verify_order_clarity() + verify_catering() + verify_about() + verify_http()
     if errors:
         print(f"FAIL: {len(errors)} clean-route issue(s)")
         for error in errors:
             print(f"- {error}")
         return 1
-    print("PASS: clean routes, 16 optimized menu photos, side imagery, lightbox hooks, sitemap, assets, and HTTP routes")
+    print("PASS: clean routes, 16 optimized menu photos, side imagery, lightbox hooks, sitemap, assets, HTTP routes, grouped order summary, pre-Square review, and return receipt")
     return 0
 
 

@@ -61,3 +61,99 @@ body.lightbox-open{overflow:hidden}
 .copy-inquiry-button{border:1px solid rgba(243,204,99,.5);background:transparent;color:#F3CC63;cursor:pointer}
 .form-status{margin:12px 0 0!important;color:var(--muted);font-size:13px}
 @media(max-width:580px){.catering-send-actions{flex-direction:column}.catering-send-actions .btn{width:100%}.date-picker-button{width:52px}}
+
+/* Order clarity — labelled plate ledger, pre-Square review sheet, return receipt.
+   TASK-20260831-04. Tokens only; no new palette. */
+.summary-head{display:flex;align-items:baseline;justify-content:space-between;gap:12px;flex-wrap:wrap}
+.summary-count{font-size:11px;font-weight:800;letter-spacing:.09em;text-transform:uppercase;color:var(--green-soft)}
+.summary-empty{margin:14px 0 0;font-family:'Source Serif 4',serif;font-size:15px;line-height:1.5;color:var(--green-soft)}
+
+.ticket{padding:14px 0;border-bottom:1px solid rgba(244,236,217,.18)}
+.ticket:last-of-type{border-bottom:0}
+.ticket-top{display:grid;grid-template-columns:minmax(0,1fr) auto auto;align-items:start;gap:10px}
+.ticket-name{font-stretch:125%;font-weight:800;font-size:15px;line-height:1.2;letter-spacing:.03em;text-transform:uppercase;color:#F4ECD9;min-width:0;overflow-wrap:anywhere}
+.ticket-price{font-stretch:125%;font-weight:800;color:var(--gold);white-space:nowrap}
+.ticket-remove{width:44px;height:44px;margin:-12px -6px -12px 0;flex:0 0 auto;border:1px solid rgba(243,204,99,.35);border-radius:3px;background:transparent;color:#F3CC63;font-size:19px;line-height:1;cursor:pointer}
+.ticket-remove:hover,.ticket-remove:focus-visible{background:rgba(243,204,99,.16);border-color:#F3CC63;color:#FFF6DF;outline:0}
+.ticket-remove:focus-visible{box-shadow:0 0 0 3px rgba(224,165,42,.35)}
+.ticket-spec{display:grid;grid-template-columns:98px minmax(0,1fr);gap:4px 12px;margin:10px 0 0}
+.ticket-spec dt{font-size:10px;font-weight:800;letter-spacing:.09em;line-height:1.35;text-transform:uppercase;color:#F3CC63;padding-top:2px}
+.ticket-spec dd{margin:0;font-size:13.5px;line-height:1.45;color:#F0E7D2;min-width:0;overflow-wrap:anywhere}
+.ticket-spec dd.is-empty{color:var(--green-soft);font-family:'Source Serif 4',serif;font-style:italic}
+
+.summary-meta{display:grid;gap:8px;margin-top:16px;padding-top:14px;border-top:1px solid rgba(244,236,217,.18)}
+.summary-meta-row{display:flex;justify-content:space-between;gap:14px;font-size:13.5px;color:#E7DDC6}
+.summary-meta-row span{font-size:10px;font-weight:800;letter-spacing:.09em;text-transform:uppercase;color:var(--green-soft);padding-top:3px}
+.summary-meta-row strong{text-align:right;min-width:0;overflow-wrap:anywhere;color:#F4ECD9}
+
+body.review-open{overflow:hidden}
+.review-scrim{position:fixed;inset:0;z-index:900;display:flex;align-items:center;justify-content:center;padding:24px;background:rgba(11,10,8,.76)}
+.review-sheet{position:relative;display:flex;flex-direction:column;width:min(560px,100%);max-height:min(660px,calc(100vh - 48px));background:var(--card);border:1px solid var(--line);border-radius:4px;box-shadow:0 14px 42px rgba(0,0,0,.45);overflow:hidden}
+.review-sheet:focus{outline:0}
+.review-head{flex:0 0 auto;padding:20px 76px 20px 24px;background:var(--green);border-bottom:1px solid var(--line)}
+.review-head .eyebrow{margin:0 0 8px;color:#F3CC63}
+.review-head h2{margin:0;font-stretch:125%;font-weight:800;font-size:22px;line-height:1.12;letter-spacing:.015em;text-transform:uppercase;color:#F4ECD9}
+.review-pickup{display:flex;flex-wrap:wrap;gap:8px 22px;margin-top:12px;font-size:13.5px;color:#E7DDC6}
+.review-pickup span{min-width:0;overflow-wrap:anywhere}
+.review-pickup b{margin-right:8px;font-size:10px;font-weight:800;letter-spacing:.09em;text-transform:uppercase;color:#F3CC63}
+.review-close{position:absolute;top:16px;right:16px;width:44px;height:44px;display:grid;place-items:center;border:1px solid var(--line);border-radius:3px;background:rgba(11,10,8,.55);color:#F3CC63;font-size:22px;line-height:1;cursor:pointer}
+.review-close:hover,.review-close:focus-visible{background:rgba(243,204,99,.18);border-color:#F3CC63;color:#FFF6DF;outline:0}
+.review-close:focus-visible{box-shadow:0 0 0 3px rgba(224,165,42,.35)}
+.review-scroll{flex:1 1 auto;min-height:0;overflow-y:auto;padding:0 24px;overscroll-behavior:contain}
+.review-scroll:focus-visible{outline:2px solid #F3CC63;outline-offset:-2px}
+/* Soften the cut-off row at the scroll edge so it reads as 'continues below'. */
+.review-scroll.has-more{-webkit-mask-image:linear-gradient(to bottom,#000 calc(100% - 26px),transparent);mask-image:linear-gradient(to bottom,#000 calc(100% - 26px),transparent)}
+.review-scroll .ticket:first-of-type{padding-top:18px}
+.review-scroll .ticket-name{color:#F4ECD9}
+.review-foot{flex:0 0 auto;padding:18px 24px 20px;border-top:1px solid var(--line);background:var(--card)}
+.review-count{margin:0;font-size:10px;font-weight:800;letter-spacing:.09em;text-transform:uppercase;color:var(--muted)}
+.review-foot .summary-total{margin:6px 0 14px}
+.review-actions{display:grid;grid-template-columns:auto minmax(0,1fr);gap:12px}
+.review-edit{background:transparent;color:#F3CC63;border:1.5px solid rgba(243,204,99,.5)}
+.review-edit:hover{background:rgba(243,204,99,.14);color:#FFF0C2}
+.review-confirm{background:var(--gold);color:#100F0C}
+.review-confirm:hover{background:#FFF0C2;color:#100F0C}
+.review-confirm:disabled{opacity:.55;cursor:not-allowed}
+.review-edit:focus-visible,.review-confirm:focus-visible{outline:0;box-shadow:0 0 0 3px #1B1813,0 0 0 6px #F3CC63}
+.review-note{margin:12px 0 0;font-family:'Source Serif 4',serif;font-size:13px;line-height:1.5;color:var(--muted);text-align:center}
+
+.receipt{margin-top:20px;padding-top:18px;border-top:1px solid var(--line)}
+.receipt-lead{margin:0 0 6px;font-size:11px;font-weight:800;letter-spacing:.09em;text-transform:uppercase;color:#E0A52A}
+.receipt .ticket-spec dt{color:#E0A52A}
+.receipt .ticket-spec dd.is-empty,.receipt .summary-meta-row span{color:var(--muted)}
+.receipt .summary-total{color:#E0A52A}
+
+@media(max-width:580px){
+  .review-scrim{align-items:flex-end;padding:0}
+  .review-sheet{width:100%;max-height:90vh;border-radius:4px 4px 0 0;border-bottom:0}
+  /* The sheet's job is showing the order, so the chrome around it stays lean. */
+  .review-head{padding:14px 62px 14px 18px}
+  .review-head .eyebrow{margin-bottom:6px;font-size:10px;letter-spacing:.12em}
+  .review-head h2{font-size:19px;line-height:1.1}
+  .review-pickup{gap:4px 18px;margin-top:9px;font-size:13px}
+  .review-close{top:12px;right:12px}
+  .review-scroll,.review-foot{padding-left:18px;padding-right:18px}
+  .review-foot{padding-top:14px;padding-bottom:16px}
+  .review-foot .summary-total{margin:4px 0 12px;font-size:22px}
+  .review-total-qualifier{display:none}
+  .review-actions{grid-template-columns:minmax(0,1fr);gap:8px}
+  .review-actions .review-confirm{order:-1}
+  .review-note{margin-top:10px;font-size:12px}
+  .ticket-spec{grid-template-columns:minmax(0,1fr);gap:2px}
+  .ticket-spec dt{padding-top:8px}
+  /* A Square order reference is one long unbreakable token; give it the full width
+     rather than letting it hard-wrap and strand a fragment. */
+  .receipt .summary-meta-row{flex-direction:column;align-items:flex-start;gap:2px}
+  .receipt .summary-meta-row strong{text-align:left}
+}
+
+/* The desktop sidebar is a fixed 340px column: a 98px label gutter leaves values too
+   narrow and strands a single word ("Peas", "plate") on the last line. Stack the label
+   above the value there and keep the two-column list where there is room for it. */
+@media(min-width:921px){
+  .summary .ticket-spec{grid-template-columns:minmax(0,1fr);gap:2px}
+  .summary .ticket-spec dt{padding-top:9px}
+  .summary .ticket-spec dt:first-of-type{padding-top:0}
+}
+.review-scroll-hint{flex:0 0 auto;margin:0;padding:8px 24px;border-top:1px solid rgba(224,165,42,.18);font-size:10px;font-weight:800;letter-spacing:.09em;text-transform:uppercase;color:var(--muted)}
+@media(max-width:580px){.review-scroll-hint{padding-left:18px;padding-right:18px}}

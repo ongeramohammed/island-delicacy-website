@@ -16,5 +16,12 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
       - name: Verify clean routes and compatibility redirects
         run: python3 scripts/verify_clean_urls.py
+      - name: Order summary / review / receipt serialization
+        run: node --test tests/order-format.test.mjs
+      - name: Checkout worker unit tests
+        run: cd worker && npm test
