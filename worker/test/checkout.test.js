@@ -97,8 +97,8 @@ test('preserves multiple configured plates and sides-only items in one Square ch
   assert.deepEqual(
     request.order.line_items.map((line) => [line.name, line.quantity, line.base_price_money.amount, line.note || '']),
     [
-      ['Jerk Chicken', '1', 2000, 'Includes: Rice & Peas · Sides: Steamed Cabbage + Sweet Plantains · Leave off / requests: no carrots'],
-      ['Chicken Rasta Pasta', '2', 2200, 'Includes: No rice & peas (rasta pasta) · Sides: Rice & Peas + Steamed Cabbage · Leave off / requests: light spice'],
+      ['Jerk Chicken', '1', 2000, 'Includes: Rice & Peas | Your sides: Steamed Cabbage · Sweet Plantains | Extras: None | Leave off / requests: no carrots'],
+      ['Chicken Rasta Pasta', '2', 2200, 'Includes: No rice & peas — rasta pasta plate | Your sides: Rice & Peas · Steamed Cabbage | Extras: Extra oxtail (+$12) | Leave off / requests: light spice'],
       ['Extra oxtail · Chicken Rasta Pasta', '1', 1200, 'For 2 × Chicken Rasta Pasta'],
       ['Side · Rasta Pasta', '3', 500, ''],
     ],
@@ -150,8 +150,8 @@ test('every Square plate line states the included base item so nothing depends o
   }, 'idem-includes');
 
   assert.deepEqual(request.order.line_items.map((line) => line.note), [
-    'Includes: Rice & Peas · Sides: Steamed Cabbage + Sweet Plantains',
-    'Includes: No rice & peas (rasta pasta) · Sides: Rice & Peas + Sweet Plantains',
+    'Includes: Rice & Peas | Your sides: Steamed Cabbage · Sweet Plantains | Extras: None | Leave off / requests: Nothing — cook it as it comes',
+    'Includes: No rice & peas — rasta pasta plate | Your sides: Rice & Peas · Sweet Plantains | Extras: None | Leave off / requests: Nothing — cook it as it comes',
   ]);
   // No plate line may omit the Includes clause, whichever way it reads.
   for (const line of request.order.line_items) assert.match(line.note, /^Includes: /);
@@ -222,7 +222,7 @@ test('a 20-line / 30-item order keeps every plate a separate Square line with it
   }, 'idem-dense');
   assert.equal(request.order.line_items.length, 15, 'identical-looking plates must not be merged');
   assert.equal(new Set(request.order.line_items.map((line) => line.note)).size, 15);
-  assert.equal(request.order.line_items[0].note, 'Includes: Rice & Peas · Sides: Steamed Cabbage + Sweet Plantains · Leave off / requests: leave off item 0');
-  assert.equal(request.order.line_items[13].note, 'Includes: Rice & Peas · Sides: Steamed Cabbage + Rasta Pasta · Leave off / requests: leave off item 13');
-  assert.equal(request.order.line_items[14].note, 'Includes: Rice & Peas · Sides: Steamed Cabbage + Sweet Plantains · Leave off / requests: leave off item 14');
+  assert.equal(request.order.line_items[0].note, 'Includes: Rice & Peas | Your sides: Steamed Cabbage · Sweet Plantains | Extras: None | Leave off / requests: leave off item 0');
+  assert.equal(request.order.line_items[13].note, 'Includes: Rice & Peas | Your sides: Steamed Cabbage · Rasta Pasta | Extras: None | Leave off / requests: leave off item 13');
+  assert.equal(request.order.line_items[14].note, 'Includes: Rice & Peas | Your sides: Steamed Cabbage · Sweet Plantains | Extras: None | Leave off / requests: leave off item 14');
 });

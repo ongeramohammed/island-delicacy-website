@@ -100,7 +100,11 @@ function hydratePreviewCards(){
 function orderInit(){
   const root=document.querySelector('[data-order-app]'); if(!root || !window.ISLAND_MENU) return;
   const params=new URLSearchParams(location.search);
-  if(params.get('confirmed')==='1' || params.get('paid')==='1') renderReturnReceipt();
+  if(params.get('confirmed')==='1' || params.get('paid')==='1'){
+    // Returning from Square: the receipt IS the page. Render it first, hide the
+    // builder, and stop — there is nothing for a submitted order to configure.
+    if(renderReturnReceipt()) return;
+  }
   if(params.get('sandbox')==='1' && window.ISLAND_CHECKOUT?.sandbox){
     root.insertAdjacentHTML('afterbegin','<div class="container"><div class="success"><strong>SANDBOX TEST MODE</strong><p>No real charge will be made. Use a Square Sandbox test card only.</p></div></div>');
   }
@@ -478,16 +482,26 @@ function storeReceipt(model, meta){
   }catch(_error){ /* A blocked sessionStorage must not stop the customer from paying. */ }
 }
 
-/** On return from Square, show the order the customer actually submitted. */
+/**
+ * On return from Square, show the order the customer actually submitted.
+ * Returns true when a stored receipt was found and the page switched to return mode
+ * (builder hidden, receipt first and focused); false when there is nothing to show,
+ * in which case the generic confirmation sits above a still-usable builder.
+ */
 function renderReturnReceipt(){
   const confirmation=document.querySelector('[data-confirmation]');
-  if(!confirmation) return;
+  if(!confirmation) return false;
   confirmation.classList.remove('hidden');
   const message=confirmation.querySelector('[data-confirmation-message]');
   let receipt=null;
   try{ receipt=JSON.parse(sessionStorage.getItem('islandDelicacyLastOrder') || 'null'); }
   catch(_error){ receipt=null; }
-  if(!receipt || !Array.isArray(receipt.lines) || receipt.lines.length===0) return;
+  if(!receipt || !Array.isArray(receipt.lines) || receipt.lines.length===0){
+    // No stored receipt (new tab, cleared storage). Say so honestly and leave the
+    // builder available underneath instead of showing an empty receipt shell.
+    focusReturnPanel(confirmation);
+    return false;
+  }
   const F=fmt();
   const model=F.modelFromReceipt(receipt);
   if(message) message.textContent = receipt.phoneLast4
@@ -504,6 +518,16 @@ function renderReturnReceipt(){
   const totalEl=confirmation.querySelector('[data-receipt-total]');
   if(totalEl) totalEl.textContent=`$${model.totalDollars}`;
   confirmation.querySelector('[data-receipt-body]')?.classList.remove('hidden');
+  document.body.classList.add('return-mode');
+  focusReturnPanel(confirmation);
+  return true;
+}
+
+/** Land the customer on their receipt, for pointer and screen-reader users alike. */
+function focusReturnPanel(panel){
+  window.scrollTo(0,0);
+  try{ panel.focus({preventScroll:true}); }
+  catch(_error){ panel.focus(); }
 }
 
 function cateringInit(){

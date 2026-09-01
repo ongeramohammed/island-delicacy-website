@@ -16,15 +16,26 @@ These are deliberately separate, and only the first is a guarantee.
 **Guaranteed by this site.** Before any payment link is created, the order page shows
 a review sheet listing every plate with `Includes`, `Your sides`, `Extras` and
 `Leave off / requests`, plus the pickup date, name, phone and total. After Square
-returns, the same order is re-rendered from a privacy-minimized `sessionStorage`
-receipt. Both surfaces and the text-order fallback render from `js/order-format.js`,
-so they cannot disagree. This is covered by `tests/order-ui.browser.mjs`.
+returns, the order page switches into return mode — the builder is hidden and the
+submitted receipt is the landing state — and re-renders from a privacy-minimized
+`sessionStorage` receipt. Every one of those surfaces, the text-order fallback **and
+the Square line note below** render from `js/order-format.js`, so they cannot
+disagree. Covered by `tests/order-ui.browser.mjs` and
+`tests/cross-surface-contract.test.mjs`.
 
 **Not guaranteed.** Whether Square's hosted checkout renders `OrderLineItem.note` to
-the buyer is **unverified**. We send it — every plate line carries
-`Includes: … · Sides: … · Leave off / requests: …` so the kitchen ticket and the
-Square dashboard are unambiguous — but no claim is made about the buyer-facing
-Square page. Do not tell a customer "you can check your sides on Square." The
+the buyer is **unverified**. We send it — `buildSquarePaymentLinkRequest` calls
+`OrderFormat.merchantNote(line)`, which is the customer's own labelled groups joined
+with ` | `, so Shantay reads the exact words the customer confirmed:
+
+```
+Includes: Rice & Peas | Your sides: Steamed Cabbage · Sweet Plantains | Extras: None | Leave off / requests: No carrots
+```
+
+The Worker deliberately holds **no** customization formatter of its own; a second one
+could drift from what the customer approved, and `tests/cross-surface-contract.test.mjs`
+fails if one is reintroduced. Server-side validation and pricing remain authoritative
+here. No claim is made about the buyer-facing Square page. Do not tell a customer "you can check your sides on Square." The
 first-party review sheet exists precisely so that customer visibility does not
 depend on Square's UI. If Square's rendering is ever confirmed, document the
 evidence here before relying on it.

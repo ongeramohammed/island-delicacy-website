@@ -187,3 +187,37 @@ test('the group vocabulary is fixed, so every surface uses the same words', () =
     sidesOnly: 'Sides only',
   });
 });
+
+test('the merchant note is the customer groups joined — not a second formatter', () => {
+  // Same labels, same values, same answered-empty states as the review sheet.
+  assert.equal(F.merchantNote(JERK),
+    'Includes: Rice & Peas | Your sides: Steamed Cabbage · Sweet Plantains | Extras: Extra meat (+$10) | Leave off / requests: No carrots, sauce on the side');
+  assert.equal(F.merchantNote(OXTAIL_PASTA),
+    'Includes: No rice & peas — rasta pasta plate | Your sides: Rice & Peas · Steamed Cabbage | Extras: None | Leave off / requests: Extra gravy on the side please');
+
+  // It is literally groupsFor() joined, so the two can never drift apart.
+  for (const plate of [JERK, OXTAIL_PASTA, CURRY_GOAT]) {
+    const fromGroups = F.groupsFor(F.plateLine(plate))
+      .map((g) => `${g.label}: ${g.value}`)
+      .join(F.MERCHANT_GROUP_SEPARATOR);
+    assert.equal(F.merchantNote(plate), fromGroups);
+  }
+
+  // The group separator cannot be confused with the separator inside a value.
+  assert.equal(F.MERCHANT_GROUP_SEPARATOR, ' | ');
+  assert.ok(!F.merchantNote(JERK).split(' | ')[1].includes(' | '));
+
+  // A side-only line has no plate customization to state.
+  assert.equal(F.merchantNote(F.sideLine('Rice & Peas', 4)), '');
+});
+
+test('the worst-case merchant note stays well inside the Square 500-character limit', () => {
+  // Longest Includes (rasta pasta) + longest side pair + an extra + a full 200-char note.
+  const note = 'x'.repeat(200);
+  const worst = F.merchantNote({
+    kind: 'plate', rastaPasta: true, meat: 'oxtail',
+    sides: ['Steamed Cabbage', 'Sweet Plantains'], note,
+  });
+  assert.ok(worst.endsWith(`${F.LABELS.leaveOff}: ${note}`));
+  assert.ok(worst.length < 500, `worst-case merchant note is ${worst.length} characters`);
+});

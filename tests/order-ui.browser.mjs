@@ -230,6 +230,100 @@ const browser = await chromium.launch();
 }
 
 // --------------------------------------------------------------------------
+// 1b. CORRECTION (defect 1): the return receipt must be the landing state.
+// Jade measured the receipt at top 4373.83 px on a 390x844 return; it must now
+// intersect the initial viewport at scrollY=0 on every required viewport.
+// --------------------------------------------------------------------------
+for (const vp of [{ w: 390, h: 844 }, { w: 768, h: 1024 }, { w: 1440, h: 900 }]) {
+  for (const param of ['paid', 'confirmed']) {
+    const page = await browser.newPage({ viewport: { width: vp.w, height: vp.h } });
+    await buildOrder(page, base);
+    await page.click('[data-checkout]');
+    await page.waitForSelector('[data-review-dialog]', { state: 'visible' });
+    await page.click('[data-od-id="order-review-confirm"]');
+    await page.waitForURL(/^https:\/\/square\.link\//);
+
+    await page.goto(`${base}/order/?${param}=1`, { waitUntil: 'domcontentloaded' });
+    await page.waitForSelector('[data-od-id="order-return-receipt"]:not(.hidden)');
+
+    await check(`${vp.w}x${vp.h}: ?${param}=1 lands ON the receipt, with no scrolling`, async () => {
+      const geo = await page.evaluate(() => {
+        const panel = document.querySelector('[data-od-id="order-return-receipt"]');
+        const lines = document.querySelector('[data-receipt-lines]');
+        const rect = panel.getBoundingClientRect();
+        const first = lines.querySelector('.ticket').getBoundingClientRect();
+        return {
+          scrollY: window.scrollY, vh: window.innerHeight, vw: window.innerWidth,
+          panelTop: rect.top, panelBottom: rect.bottom,
+          firstLineTop: first.top, firstLineBottom: first.bottom,
+          scrollW: document.documentElement.scrollWidth, clientW: document.documentElement.clientWidth,
+          activeIsPanel: document.activeElement === panel,
+          builderHidden: getComputedStyle(document.querySelector('.order-layout')).display === 'none',
+          heroHidden: getComputedStyle(document.querySelector('.page-hero')).display === 'none',
+        };
+      });
+
+      assert.equal(geo.scrollY, 0, 'the customer must not have to scroll');
+      // Intersects the initial viewport.
+      assert.ok(geo.panelTop < geo.vh && geo.panelBottom > 0,
+        `receipt panel must intersect the initial viewport (top ${geo.panelTop}, bottom ${geo.panelBottom}, vh ${geo.vh})`);
+      // Not merely intersecting: the receipt starts near the top of the screen.
+      assert.ok(geo.panelTop >= 0 && geo.panelTop < geo.vh / 2,
+        `receipt panel must start in the top half of the screen, was ${geo.panelTop} of ${geo.vh}`);
+      // The first actual order line is on screen too, not just the heading.
+      assert.ok(geo.firstLineTop < geo.vh && geo.firstLineBottom > 0,
+        `the first submitted line must be visible without scrolling (top ${geo.firstLineTop}, vh ${geo.vh})`);
+      assert.ok(geo.builderHidden, 'the builder must be hidden in return mode');
+      assert.ok(geo.heroHidden, 'the ordering hero must be hidden in return mode');
+      assert.ok(geo.activeIsPanel, 'focus must land on the receipt panel');
+      assert.ok(geo.scrollW <= geo.clientW, 'no horizontal overflow in return mode');
+    });
+
+    await check(`${vp.w}x${vp.h}: ?${param}=1 preserves the exact submitted receipt`, async () => {
+      const titles = await page.$$eval('[data-receipt-lines] .ticket-name', (els) => els.map((e) => e.textContent));
+      assert.deepEqual(titles, ['2 × Jerk Chicken', '1 × Oxtail Rasta Pasta', '1 × Curry Goat', '2 × Side · Sweet Plantains']);
+      const body = await page.textContent('[data-od-id="order-return-receipt"]');
+      for (const expected of [
+        'Includes', 'Rice & Peas', 'No rice & peas — rasta pasta plate',
+        'Your sides', 'Steamed Cabbage · Sweet Plantains',
+        'Extras', 'Extra meat (+$10)', 'Extra oxtail (+$12)',
+        'Leave off / requests', 'No carrots, sauce on the side', 'Nothing — cook it as it comes',
+        'SYNTHETIC-ORDER-REF', 'ending 0147', 'Wed',
+      ]) assert.ok(body.includes(expected), `return receipt must still contain ${JSON.stringify(expected)}`);
+      assert.equal(await page.textContent('[data-receipt-total]'), '$125');
+      assert.doesNotMatch(body, /555-0147/, 'the full phone number must not be reprinted');
+      // No clipped receipt text at any viewport.
+      const clipped = await page.$$eval('[data-receipt-lines] .ticket-spec dd, [data-receipt-lines] .ticket-name', (els) => els
+        .filter((el) => el.scrollWidth > el.clientWidth + 1 || el.scrollHeight > el.clientHeight + 1)
+        .map((el) => el.textContent.slice(0, 60)));
+      assert.deepEqual(clipped, [], `clipped receipt text: ${JSON.stringify(clipped)}`);
+    });
+
+    await page.close();
+  }
+}
+
+// A return with no stored receipt must be honest and must NOT strand the customer.
+{
+  const page = await browser.newPage({ viewport: { width: 390, height: 844 } });
+  await watchNavigation(page);
+  await page.goto(`${base}/order/?paid=1`, { waitUntil: 'domcontentloaded' });
+  await check('390x844: a return with no stored receipt stays honest and keeps the builder usable', async () => {
+    await page.waitForSelector('[data-od-id="order-return-receipt"]:not(.hidden)');
+    const state = await page.evaluate(() => ({
+      receiptHidden: document.querySelector('[data-receipt-body]').classList.contains('hidden'),
+      builderHidden: getComputedStyle(document.querySelector('.order-layout')).display === 'none',
+      panelTop: document.querySelector('[data-od-id="order-return-receipt"]').getBoundingClientRect().top,
+      vh: window.innerHeight,
+    }));
+    assert.ok(state.receiptHidden, 'no invented receipt when nothing was stored');
+    assert.ok(!state.builderHidden, 'the builder stays available so the customer can order again');
+    assert.ok(state.panelTop >= 0 && state.panelTop < state.vh, 'the message is still the landing state');
+  });
+  await page.close();
+}
+
+// --------------------------------------------------------------------------
 // 2. Text fallback when Square cannot create a link
 // --------------------------------------------------------------------------
 {

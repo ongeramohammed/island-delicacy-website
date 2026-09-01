@@ -209,11 +209,39 @@ def verify_order_clarity() -> list[str]:
     if "phoneLast4" not in fmt_js:
         errors.append("the stored receipt must keep only the last four phone digits")
 
-    # Merchant truth: every Square plate line states the included base item.
-    if "Includes: ${line.rastaPasta ? 'No rice & peas (rasta pasta)' : 'Rice & Peas'}" not in checkout_js:
-        errors.append("worker/src/checkout.js must state the included base item on every Square plate line")
-    if "Leave off / requests: ${line.note}" not in checkout_js:
-        errors.append("worker/src/checkout.js must label the customer request unambiguously for the kitchen")
+    # Merchant truth comes from the SAME serializer the customer read — one source,
+    # never a second formatter in the Worker (DESIGN-LOCK decision 1).
+    if "import OrderFormat from '../../js/order-format.js'" not in checkout_js:
+        errors.append("worker/src/checkout.js must import the shared serializer, not rebuild customization text")
+    if "OrderFormat.merchantNote(line)" not in checkout_js:
+        errors.append("worker/src/checkout.js must build Square plate notes with OrderFormat.merchantNote")
+    if "OrderFormat.EXTRAS[line.meat]" not in checkout_js or "OrderFormat.lineTitle(line)" not in checkout_js:
+        errors.append("worker/src/checkout.js must take the extra label and plate back-reference from the shared serializer")
+    for forbidden in ("Includes:", "Sides:", "Leave off", "Extra meat", "Extra oxtail", "No rice"):
+        if forbidden in checkout_js:
+            errors.append(f"worker/src/checkout.js re-declares customization vocabulary that must come from the shared serializer: {forbidden}")
+    if "merchantNote" not in fmt_js or "MERCHANT_GROUP_SEPARATOR" not in fmt_js:
+        errors.append("js/order-format.js must own the merchant-note serialization")
+
+    # The Square return must land the customer ON the receipt, not below the builder.
+    main_index = order_html.index("<main data-order-app>")
+    if order_html.index("data-confirmation") < main_index:
+        errors.append("order/index.html: the return receipt must live inside <main>")
+    if order_html.index("data-confirmation") > order_html.index("order-layout"):
+        errors.append("order/index.html: the return receipt must precede the order builder so a returning customer lands on it")
+    for required, why in (
+        ("return-panel", "the return receipt needs its own landing panel"),
+        ('tabindex="-1"', "the return panel must be focusable so keyboard users land on it"),
+        ("order-return-restart", "a returning customer needs a truthful way back to ordering"),
+    ):
+        if required not in order_html:
+            errors.append(f"order/index.html missing return-mode requirement ({why}): {required}")
+    if "body.return-mode .page-hero" not in css or "body.return-mode .order-layout" not in css:
+        errors.append("styles.css must hide the hero and builder in return mode")
+    if "classList.add('return-mode')" not in main_js:
+        errors.append("main.js must switch the page into return mode rather than leave the receipt below the fold")
+    if "focusReturnPanel" not in main_js:
+        errors.append("main.js must focus the return receipt on arrival")
 
     for required, why in (
         (".ticket-spec{display:grid;grid-template-columns:98px minmax(0,1fr)", "plate specs must be a two-column labelled list"),
@@ -230,6 +258,8 @@ def verify_order_clarity() -> list[str]:
         errors.append("missing tests/order-format.test.mjs")
     if not (ROOT / "tests" / "order-ui.browser.mjs").is_file():
         errors.append("missing tests/order-ui.browser.mjs")
+    if not (ROOT / "tests" / "cross-surface-contract.test.mjs").is_file():
+        errors.append("missing tests/cross-surface-contract.test.mjs")
     return errors
 
 

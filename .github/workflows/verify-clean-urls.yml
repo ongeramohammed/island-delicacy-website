@@ -23,5 +23,7 @@ jobs:
         run: python3 scripts/verify_clean_urls.py
       - name: Order summary / review / receipt serialization
         run: node --test tests/order-format.test.mjs
+      - name: Cross-surface serialization contract (browser vs Square notes)
+        run: node --test tests/cross-surface-contract.test.mjs
       - name: Checkout worker unit tests
         run: cd worker && npm test

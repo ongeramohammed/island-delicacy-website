@@ -1,3 +1,7 @@
+// The one serialization the browser also uses. Merchant notes are not rebuilt here:
+// a second formatter would be free to drift away from what the customer confirmed.
+import OrderFormat from '../../js/order-format.js';
+
 const PACIFIC_TIME_ZONE = 'America/Los_Angeles';
 const MAX_DAYS_AHEAD = 30;
 
@@ -25,6 +29,8 @@ const SIDE_ONLY = Object.freeze({
 
 const STANDARD_SIDES = new Set(['Steamed Cabbage', 'Sweet Plantains', 'Rasta Pasta']);
 const RASTA_SIDES = new Set(['Steamed Cabbage', 'Sweet Plantains', 'Rice & Peas']);
+// Server-authoritative cents. tests/cross-surface-contract.test.mjs asserts these
+// equal the dollar prices the customer is shown by the shared serializer.
 const EXTRA_PRICES = Object.freeze({ meat: 1000, oxtail: 1200 });
 
 export class ValidationError extends Error {
@@ -173,17 +179,12 @@ export function buildSquarePaymentLinkRequest(order, env, idempotencyKey) {
       continue;
     }
 
-    // Shantay must not have to remember a hidden default, so the included base item
-    // is stated on every plate line — including its explicit absence on rasta pasta.
-    const details = [
-      `Includes: ${line.rastaPasta ? 'No rice & peas (rasta pasta)' : 'Rice & Peas'}`,
-      `Sides: ${line.sides.join(' + ')}`,
-    ];
-    if (line.note) details.push(`Leave off / requests: ${line.note}`);
-    lineItems.push(lineItem(line.name, line.qty, line.priceCents, details.join(' · ')));
+    // Shantay reads exactly the words the customer confirmed — same labels, same
+    // values, same answered-empty states — because this is the shared serializer.
+    lineItems.push(lineItem(line.name, line.qty, line.priceCents, OrderFormat.merchantNote(line)));
     if (line.meat) {
-      const extraName = line.meat === 'oxtail' ? 'Extra oxtail' : 'Extra meat';
-      lineItems.push(lineItem(`${extraName} · ${line.name}`, 1, line.extraCents, `For ${line.qty} × ${line.name}`));
+      const extra = OrderFormat.EXTRAS[line.meat];
+      lineItems.push(lineItem(`${extra.label} · ${line.name}`, 1, line.extraCents, `For ${OrderFormat.lineTitle(line)}`));
     }
   }
 

@@ -40,6 +40,11 @@
     oxtail: { label: 'Extra oxtail', price: 12 },
   };
 
+  // Merchant notes join the SAME groups the customer saw. Values already use ' · '
+  // internally (between sides), so groups are separated by a token that cannot
+  // collide with one, keeping a kitchen ticket unambiguous at a glance.
+  var MERCHANT_GROUP_SEPARATOR = ' | ';
+
   function extraFor(meat) {
     return meat && Object.prototype.hasOwnProperty.call(EXTRAS, meat) ? EXTRAS[meat] : null;
   }
@@ -121,6 +126,21 @@
       { key: 'extras', label: LABELS.extras, value: extras || EMPTY.extras, isEmpty: !extras },
       { key: 'leaveOff', label: LABELS.leaveOff, value: line.note || EMPTY.leaveOff, isEmpty: !line.note },
     ];
+  }
+
+  /**
+   * The Square `OrderLineItem.note` for one configured plate.
+   *
+   * This is deliberately `groupsFor()` joined — not a second formatter. Shantay reads
+   * the exact words the customer read, and there is no independent literal that can
+   * drift away from the review sheet or the receipt. Side-only lines get no note:
+   * the Square line name ("Side · Rice & Peas") already carries their whole truth.
+   */
+  function merchantNote(input) {
+    if (!input || input.kind === 'side') return '';
+    return groupsFor(plateLine(input))
+      .map(function (group) { return group.label + ': ' + group.value; })
+      .join(MERCHANT_GROUP_SEPARATOR);
   }
 
   /** ['A','B','A'] -> [{name:'A',qty:2},{name:'B',qty:1}], first-appearance order. */
@@ -236,6 +256,8 @@
     collapseSides: collapseSides,
     lineTitle: lineTitle,
     groupsFor: groupsFor,
+    merchantNote: merchantNote,
+    MERCHANT_GROUP_SEPARATOR: MERCHANT_GROUP_SEPARATOR,
     orderModel: orderModel,
     countLabel: countLabel,
     receiptFor: receiptFor,
