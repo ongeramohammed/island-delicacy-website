@@ -104,6 +104,26 @@ const { chromium } = await import(PLAYWRIGHT);
 const browser = await chromium.launch();
 
 // --------------------------------------------------------------------------
+// 0. Pacific calendar dates must not depend on the customer's device timezone.
+// At 00:30 in Los Angeles on Sep 1, the first valid next-day pickup is Sep 2.
+// This used to render Sep 1 for customers east of Los Angeles because main.js
+// converted a Pacific wall-clock string through the device timezone twice.
+// --------------------------------------------------------------------------
+for (const timezoneId of ['UTC', 'America/New_York', 'America/Los_Angeles']) {
+  const context = await browser.newContext({ timezoneId, viewport: { width: 390, height: 844 } });
+  const page = await context.newPage();
+  await page.clock.setFixedTime(new Date('2026-09-01T07:30:00.000Z'));
+  await page.goto(`${base}/order/`, { waitUntil: 'domcontentloaded' });
+  await check(`${timezoneId}: Pacific next-day pickup stays Wed, Sep 2 after LA midnight`, async () => {
+    const firstDate = page.locator('[data-date]').first();
+    assert.equal((await firstDate.textContent()).trim(), 'Wed, Sep 2');
+    assert.equal(await firstDate.getAttribute('data-date'), '2026-09-02');
+    assert.match((await page.textContent('[data-cutoff-bar]')).trim(), /^Ordering open/);
+  });
+  await context.close();
+}
+
+// --------------------------------------------------------------------------
 // 1. Grouped summary, review chronology, edit, payload, receipt, fallback
 // --------------------------------------------------------------------------
 {

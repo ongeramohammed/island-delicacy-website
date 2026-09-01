@@ -14,11 +14,28 @@ const state = { item:null, sides:[], meat:false, qty:1, date:'', dateLabel:'', n
 let reviewOpener=null;
 function fmt(){ return window.IslandOrderFormat; }
 
-function laNow(){ return new Date(new Date().toLocaleString('en-US', { timeZone:'America/Los_Angeles' })); }
-function addDays(base, days){ const d = new Date(base); d.setDate(d.getDate()+days); return d; }
-function fmtDate(d){ return d.toLocaleDateString('en-US',{weekday:'short',month:'short',day:'numeric',timeZone:'America/Los_Angeles'}); }
-function fullDate(d){ return d.toLocaleDateString('en-US',{weekday:'long',month:'long',day:'numeric',year:'numeric',timeZone:'America/Los_Angeles'}); }
-function isoDate(d){ return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`; }
+const PACIFIC_TIME_ZONE = 'America/Los_Angeles';
+const pacificClock = new Intl.DateTimeFormat('en-US', {
+  timeZone:PACIFIC_TIME_ZONE,
+  year:'numeric', month:'2-digit', day:'2-digit',
+  hour:'2-digit', minute:'2-digit', second:'2-digit', hourCycle:'h23'
+});
+function pacificParts(reference=new Date()){
+  return Object.fromEntries(pacificClock.formatToParts(reference)
+    .filter(part=>part.type!=='literal')
+    .map(part=>[part.type, Number(part.value)]));
+}
+// Date is used here as a timezone-neutral Pacific wall-clock carrier. Every
+// read/write below uses UTC methods, so a customer's device timezone can never
+// shift a Pacific pickup date backward or forward.
+function laNow(reference=new Date()){
+  const p=pacificParts(reference);
+  return new Date(Date.UTC(p.year,p.month-1,p.day,p.hour,p.minute,p.second));
+}
+function addDays(base, days){ const d=new Date(base); d.setUTCDate(d.getUTCDate()+days); return d; }
+function fmtDate(d){ return d.toLocaleDateString('en-US',{weekday:'short',month:'short',day:'numeric',timeZone:'UTC'}); }
+function fullDate(d){ return d.toLocaleDateString('en-US',{weekday:'long',month:'long',day:'numeric',year:'numeric',timeZone:'UTC'}); }
+function isoDate(d){ return `${d.getUTCFullYear()}-${String(d.getUTCMonth()+1).padStart(2,'0')}-${String(d.getUTCDate()).padStart(2,'0')}`; }
 function isRastaPasta(item){ return item?.category === 'Rasta Pasta'; }
 function sidesFor(item){ return isRastaPasta(item) ? RASTA_SIDES : DEFAULT_SIDES; }
 function currentPlateDraft(){
@@ -63,7 +80,7 @@ function safeSquareUrl(value, environment){
 
 function cutoffInfo(){
   const now = laNow();
-  const cutoff = new Date(now); cutoff.setHours(10,0,0,0);
+  const cutoff = new Date(now); cutoff.setUTCHours(10,0,0,0);
   const before10 = now < cutoff;
   const firstOffset = before10 ? 1 : 2;
   const earliest = addDays(now, firstOffset);

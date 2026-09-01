@@ -330,6 +330,27 @@ def verify_about() -> list[str]:
     return errors
 
 
+def verify_faq_checkout_truth() -> list[str]:
+    """The FAQ must describe the production review-to-Square flow, not launch-era fallback behavior."""
+    errors: list[str] = []
+    faq = (ROOT / "faq" / "index.html").read_text(encoding="utf-8")
+    for stale in (
+        "once the official item links are added",
+        "the order button prepares a text order",
+        "Payment runs through Square once",
+    ):
+        if stale in faq:
+            errors.append(f"faq/index.html still ships stale pre-launch Square copy: {stale}")
+    for truthful in (
+        "review every plate, side, extra and leave-off request",
+        "pay securely through Square",
+        "no account needed",
+    ):
+        if truthful not in faq:
+            errors.append(f"faq/index.html is missing the current checkout description: {truthful}")
+    return errors
+
+
 def verify_homepage() -> list[str]:
     """The locked homepage contract: source-driven plate board, truthful Square
     copy, one primary CTA, real owner photography and no type over a photo.
@@ -496,7 +517,7 @@ def verify_http() -> list[str]:
 
 
 def main() -> int:
-    errors = verify_files() + verify_order_design() + verify_order_clarity() + verify_catering() + verify_about() + verify_homepage() + verify_http()
+    errors = verify_files() + verify_order_design() + verify_order_clarity() + verify_catering() + verify_about() + verify_faq_checkout_truth() + verify_homepage() + verify_http()
     if errors:
         print(f"FAIL: {len(errors)} clean-route issue(s)")
         for error in errors:
