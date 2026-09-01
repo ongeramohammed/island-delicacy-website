@@ -16,55 +16,92 @@
   <link rel="icon" href="/favicon.ico">
   <link rel="apple-touch-icon" href="/assets/icons/apple-touch-icon.png">
   <link rel="manifest" href="/site.webmanifest">
-  <link rel="stylesheet" href="/css/styles.css">
+  <link rel="preload" as="image" href="/assets/menu/oxtail.webp" fetchpriority="high">
+  <link rel="stylesheet" href="/css/styles.css?v=20260901-homepage-board-1">
 </head>
 <body>
+<a class="skip-link" href="#main">Skip to content</a>
 <div class="announcement" data-cutoff-bar>Orders close at 10:00 AM daily</div>
 <header class="site-header">
   <nav class="nav" aria-label="Main navigation">
-    <a class="brand" href="/" aria-label="Island Delicacy home"><img src="/assets/brand/logo-cream.png" alt="Island Delicacy"></a>
+    <a class="brand" href="/" aria-label="Island Delicacy home"><img src="/assets/brand/logo-cream.png" width="1575" height="1027" alt="Island Delicacy"></a>
     <button class="menu-toggle" type="button" data-menu-toggle>MENU</button>
     <div class="nav-links">
-      <a href="/" class="active">Home</a><a href="/order/" class="">Order</a><a href="/catering/" class="">Catering</a><a href="/about/" class="">About</a><a href="/faq/" class="">FAQ</a>
+      <a href="/" class="active" aria-current="page">Home</a><a href="/order/" class="">Order</a><a href="/catering/" class="">Catering</a><a href="/about/" class="">About</a><a href="/faq/" class="">FAQ</a>
     </div>
-    <div class="nav-actions"><a class="phone" href="tel:+19297424202">(929) 742-4202</a><a class="btn btn-primary" href="/order/">Order for <span data-earliest-label>tomorrow</span></a></div>
+    <div class="nav-actions"><a class="phone" href="tel:+19297424202">(929) 742-4202</a><a class="btn btn-cream" href="/order/">Order for <span data-earliest-label>tomorrow</span></a></div>
   </nav>
 </header>
-<main>
-  <section class="hero">
-    <div class="hero-inner">
-      <div class="kicker">fresh · preorder · San Diego</div>
-      <h1>Caribbean comfort food worth planning for.</h1>
-      <p>Every plate is cooked fresh for you — never held over, never frozen. Order by 10 AM, pick it up hot tomorrow.</p>
-      <div class="hero-actions"><a class="btn btn-gold" href="/order/">Start an order</a><a class="btn btn-cream" href="/catering/">Plan catering</a></div>
+<main id="main">
+  <section class="home-hero" data-od-id="home-hero">
+    <div class="container home-hero-grid">
+      <div class="home-hero-copy">
+        <p class="eyebrow">Jamaican &amp; Caribbean · San Diego</p>
+        <h1 class="home-title">Cooked to order.<br><em>Never held over.</em></h1>
+        <p class="home-lead">A preorder kitchen, not a restaurant.<span class="home-lead-more"> Every plate is shopped, seasoned and cooked for the person who ordered it — which is why we ask for a day's notice.</span></p>
+        <p class="home-clock"><b>Order by 10&nbsp;AM</b><span data-cutoff-line>Orders close at 10 AM.</span></p>
+        <p class="home-actions">
+          <a class="btn btn-gold" href="/order/" data-od-id="home-primary-order">Start an order</a>
+          <a class="textlink" href="/catering/" data-od-id="home-secondary-catering">Catering &amp; trays</a>
+        </p>
+      </div>
+      <div class="home-board-wrap">
+        <div class="home-board" data-menu-preview data-od-id="home-plate-board"></div>
+        <p class="home-board-foot"><span data-menu-range>Every plate is cooked for your pickup day.</span><a href="/order/" data-od-id="home-board-menu-link">See the full menu</a></p>
+      </div>
     </div>
   </section>
-  <section class="container">
-    <div class="section-head"><div><p class="eyebrow">On the stove this week</p><h2 class="section-title">Small-batch plates.</h2></div><p class="lead">Plates are limited daily. Square will enforce real sold-out status once payment links are connected.</p></div>
-    <div class="grid menu-preview" data-menu-preview></div>
+
+  <section class="container home-band" data-od-id="home-how-it-works">
+    <p class="eyebrow">How preorder works</p>
+    <h2 class="section-title">Order today. Pick it up tomorrow.</h2>
+    <ol class="home-rail">
+      <li data-od-id="home-step-build"><p class="home-rail-n">01</p><h3>Build your plate</h3><p>Pick a plate, exactly two sides, quantity and a pickup date. Most plates include rice &amp; peas; rasta pasta plates take it as a side instead.</p></li>
+      <li data-od-id="home-step-pay"><p class="home-rail-n">02</p><h3>Check it, then pay</h3><p>You see every plate, side, extra and leave-off request written out before anything is sent. Then you pay securely through Square — no account needed.</p></li>
+      <li data-od-id="home-step-pickup"><p class="home-rail-n">03</p><h3>We text your time</h3><p>You choose the date; we text you on pickup day to set the time. The kitchen takes up to 30 plates per pickup day.</p></li>
+    </ol>
   </section>
-  <section class="container">
-    <p class="eyebrow">How preorder works</p><h2 class="section-title">Order today. Pickup tomorrow.</h2>
-    <div class="grid steps">
-      <article class="step"><div class="step-num">01</div><h3>Pick your plate</h3><p>Choose one plate, exactly two sides, quantity and a pickup date. Most plates include rice & peas (rasta pasta plates don't — grab it as a side).</p></article>
-      <article class="step"><div class="step-num">02</div><h3>Pay through Square</h3><p>Checkout will use Square payment links when Shantay adds them. Until then, the button opens a prepared text order.</p></article>
-      <article class="step"><div class="step-num">03</div><h3>We text pickup time</h3><p>Customers pick a date only — we'll text you the day of to set your pickup time.</p></article>
+
+  <section class="home-owner" data-od-id="home-owner">
+    <div class="container home-owner-grid">
+      <img class="home-owner-photo" src="/assets/gallery/shantay-owner.webp" width="1200" height="1500" alt="Shantay Cole, owner of Island Delicacy" loading="lazy" decoding="async">
+      <div>
+        <p class="eyebrow home-owner-eyebrow">Who cooks it</p>
+        <blockquote class="home-owner-quote">“Nothing held over, nothing frozen, nothing rushed.”</blockquote>
+        <p class="home-owner-who">Shantay Cole · owner</p>
+        <div class="home-facts">
+          <div><b>Taught by Mom</b><span>a love of cooking that started at home</span></div>
+          <div><b>Navy discipline</b><span>consistency from her years as a culinary specialist</span></div>
+          <div><b>San Diego</b><span>made here, by preorder</span></div>
+        </div>
+        <p class="home-owner-more"><a class="textlink" href="/about/">Read Shantay's story</a></p>
+      </div>
     </div>
   </section>
-  <section class="boundary"><div class="container"><strong>We're a preorder kitchen, not a restaurant.</strong><span>No same-day plates, and that's exactly why every plate is right.</span></div></section>
-  <section class="container"><div class="grid testimonials">
-    <article class="card quote"><p>“My husband kept raving about the Jamaican food he'd been eating at work… this is the best Jamaican food I've ever had.”</p><cite>— A customer's wife, now a customer</cite></article>
-    <article class="card quote"><p>“This was so good, thank you — everyone loved it.”</p><cite>— Catering client</cite></article>
-    <article class="card quote"><p>“It was fire.”</p><cite>— Every group chat, eventually</cite></article>
-  </div></section>
+
+  <section class="container">
+    <div class="home-catering" data-od-id="home-catering">
+      <div>
+        <p class="eyebrow">Feeding a crowd</p>
+        <h2 class="section-title home-catering-title">Half and full trays for events.</h2>
+        <p>Trays feed 8–10 or 16–20. Book at least 48 hours ahead so the quote is fast and fair.</p>
+      </div>
+      <a class="btn btn-cream" href="/catering/" data-od-id="home-catering-pricing">See tray pricing</a>
+    </div>
+    <div class="home-proof" data-od-id="home-proof">
+      <div><p>“My husband kept raving about the Jamaican food he'd been eating at work… this is the best Jamaican food I've ever had.”</p><cite>— A customer's wife, now a customer</cite></div>
+      <div><p>“This was so good, thank you — everyone loved it.”</p><cite>— Catering client</cite></div>
+      <div><p>“It was fire.”</p><cite>— Every group chat, eventually</cite></div>
+    </div>
+  </section>
 </main><footer class="footer">
   <div class="container">
-    <div><img src="/assets/brand/logo-gold.png" alt="Island Delicacy"><p>Fresh Caribbean comfort food in San Diego, cooked by preorder only. Orders close 10 AM daily.</p></div>
+    <div><img src="/assets/brand/logo-gold.png" width="1575" height="1027" alt="Island Delicacy" loading="lazy"><p>Fresh Caribbean comfort food in San Diego, cooked by preorder only. Orders close 10 AM daily.</p></div>
     <div><h3>Pages</h3><a href="/">Home</a><a href="/order/">Order</a><a href="/catering/">Catering</a><a href="/about/">About</a><a href="/faq/">FAQ / Contact</a></div>
     <div><h3>Contact</h3><a href="tel:+19297424202">(929) 742-4202</a><a href="sms:+19297424202">Text to request coming-soon items</a><a href="mailto:islanddelicacy@outlook.com">islanddelicacy@outlook.com</a></div>
   </div>
 </footer>
-<script src="/js/menu.js"></script>
-<script src="/js/main.js"></script>
+<script src="/js/menu.js?v=20260818-square-production-1"></script>
+<script src="/js/main.js?v=20260901-homepage-board-1"></script>
 </body>
 </html>

@@ -90,11 +90,23 @@ function navInit(){
   btn.addEventListener('click',()=>{ links.classList.toggle('open'); document.body.classList.toggle('menu-open', links.classList.contains('open')); });
 }
 
+// Homepage plate board. Every name, price, note and photo comes from
+// window.ISLAND_MENU, so the homepage can never drift from the order page.
+// The photos are square 1400x1400 and are rendered 1:1 — never re-cropped.
 function hydratePreviewCards(){
   const wrap=document.querySelector('[data-menu-preview]'); if(!wrap || !window.ISLAND_MENU) return;
-  const featuredIds=['oxtail','jerk','curry-goat','brown-stew-chicken'];
+  const featuredIds=['oxtail','jerk','curry-goat','shrimp-rasta-pasta'];
   const featured=featuredIds.map(id=>window.ISLAND_MENU.find(item=>item.id===id)).filter(Boolean);
-  wrap.innerHTML = featured.map(item => `<a class="plate-card" href="/order/" aria-label="Order ${escapeHtml(item.name)}"><figure><img src="${item.image}" alt="${escapeHtml(item.name)} plate" loading="lazy" width="1400" height="1400"><span class="chip">Limited daily</span></figure><div class="plate-body"><div class="plate-title">${escapeHtml(item.name)}</div><div class="plate-meta"><span>${escapeHtml(item.category)}</span><span>$${item.price}</span></div></div></a>`).join('');
+  wrap.innerHTML = featured.map((item,index) => {
+    // The lead pair sits in the desktop fold, so it loads eagerly; the rest is lazy.
+    const loading = index<2 ? ' fetchpriority="high"' : ' loading="lazy"';
+    return `<a class="home-plate" href="/order/" data-od-id="home-plate-${escapeHtml(item.id)}" aria-label="Order ${escapeHtml(item.name)}, $${item.price}"><img src="${item.image}" alt="${escapeHtml(item.name)} plate" width="1400" height="1400" decoding="async"${loading}><span class="home-plate-rail"><span class="home-plate-name">${escapeHtml(item.name)}</span><span class="home-plate-meta"><span class="home-plate-note">${escapeHtml(item.note)}</span><span class="home-plate-price">$${item.price}</span></span></span></a>`;
+  }).join('');
+  const range=document.querySelector('[data-menu-range]');
+  if(range){
+    const prices=window.ISLAND_MENU.map(item=>item.price);
+    range.textContent=`${window.ISLAND_MENU.length} plates \u00b7 $${Math.min(...prices)}\u2013$${Math.max(...prices)}`;
+  }
 }
 
 function orderInit(){

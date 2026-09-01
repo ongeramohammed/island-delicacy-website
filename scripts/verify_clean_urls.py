@@ -61,8 +61,8 @@ def verify_files() -> list[str]:
     for required in ("window.SIDE_IMAGES", "data-menu-lightbox", "data-zoom-item"):
         if required not in menu_js + main_js:
             errors.append(f"menu photography integration missing: {required}")
-    if "../assets/menu/jerk-chicken.webp" not in css:
-        errors.append("homepage hero is not using the new menu photography")
+    if ".home-plate img{" not in css:
+        errors.append("homepage hero is not using the menu photography board")
     for target in menu_assets:
         asset = ROOT / target.lstrip("/")
         if not asset.is_file():
@@ -330,6 +330,142 @@ def verify_about() -> list[str]:
     return errors
 
 
+def verify_homepage() -> list[str]:
+    """The locked homepage contract: source-driven plate board, truthful Square
+    copy, one primary CTA, real owner photography and no type over a photo.
+
+    Contract of record: TASK-20260831-05, design/homepage-direction-lock.md.
+    """
+    errors: list[str] = []
+    html = (ROOT / "index.html").read_text(encoding="utf-8")
+    css = (ROOT / "css" / "styles.css").read_text(encoding="utf-8")
+    main_js = (ROOT / "js" / "main.js").read_text(encoding="utf-8")
+    menu_js = (ROOT / "js" / "menu.js").read_text(encoding="utf-8")
+
+    # 1. Pre-launch Square language is now false: production checkout is live.
+    for stale in (
+        "Square will enforce real sold-out status",
+        "once payment links are connected",
+        "when Shantay adds them",
+        "the button opens a prepared text order",
+        "Checkout will use Square payment links",
+    ):
+        if stale in html:
+            errors.append(f"index.html still ships stale pre-launch Square copy: {stale}")
+    for truthful in (
+        "before anything is sent",
+        "pay securely through Square",
+    ):
+        if truthful not in html:
+            errors.append(f"index.html is missing the truthful checkout description: {truthful}")
+
+    # 2. Never claim inventory the site does not track.
+    for forbidden in ("sold out", "sold-out", "only a few left", "selling fast"):
+        if forbidden.lower() in html.lower():
+            errors.append(f"index.html claims inventory status it cannot know: {forbidden}")
+    if re.search(r"\bLEFT\b", html):
+        errors.append("index.html claims live inventory ('LEFT' wording is prohibited)")
+    for same_day in ("pickup today", "same-day pickup", "ready today"):
+        if same_day in html.lower():
+            errors.append(f"index.html promises same-day availability: {same_day}")
+
+    # 3. The menu preview is rendered from window.ISLAND_MENU, never duplicated.
+    if "data-menu-preview" not in html:
+        errors.append("index.html is missing the source-driven menu preview mount point")
+    if "window.ISLAND_MENU" not in main_js:
+        errors.append("main.js no longer reads the menu from window.ISLAND_MENU")
+    if "data-menu-range" not in html or "data-menu-range" not in main_js:
+        errors.append("the plate count and price range must be derived from window.ISLAND_MENU")
+    names = re.findall(r"name:'([^']+)'", menu_js)
+    prices = sorted({int(price) for price in re.findall(r"price:(\d+)", menu_js)})
+    if len(names) != 12 or not prices:
+        errors.append(f"unexpected menu shape: {len(names)} names, {len(prices)} price points")
+    for name in names:
+        if name in html:
+            errors.append(f"index.html hard-codes the menu item '{name}' instead of reading window.ISLAND_MENU")
+    for price in prices:
+        if f"${price}" in html:
+            errors.append(f"index.html hard-codes the price ${price} instead of reading window.ISLAND_MENU")
+
+    # 4. The featured board must resolve to real, existing first-party photos.
+    featured = re.search(r"const featuredIds=\[([^\]]+)\]", main_js)
+    if not featured:
+        errors.append("main.js no longer declares the featured plate board")
+    else:
+        ids = re.findall(r"'([^']+)'", featured.group(1))
+        if len(ids) != 4:
+            errors.append(f"the homepage board is locked to 4 plates, found {len(ids)}")
+        for item_id in ids:
+            match = re.search(r"id:'%s'.*?image:'([^']+)'" % re.escape(item_id), menu_js)
+            if not match:
+                errors.append(f"featured plate '{item_id}' is not in js/menu.js")
+            elif not (ROOT / match.group(1).lstrip("/")).is_file():
+                errors.append(f"featured plate photo is missing: {match.group(1)}")
+
+    # 5. Square photography, declared intrinsic size, and no type over any photo.
+    if 'width="1400" height="1400"' not in main_js:
+        errors.append('board photos must declare their intrinsic width="1400" height="1400"')
+    if "aspect-ratio:1/1" not in css.split(".home-plate img{")[-1][:160]:
+        errors.append(".home-plate img must render the square photos 1:1, never re-cropped")
+    if 'class="chip"' in main_js:
+        errors.append("the homepage board must not overlay a chip on the photography")
+    if "home-plate" in css and "position:absolute" in css.split(".home-plate{")[-1][:400]:
+        errors.append("nothing may be absolutely positioned over a plate photograph")
+
+    # 6. One dominant order CTA, one clearly secondary catering path.
+    solid = html.count("btn btn-gold") + html.count("btn btn-primary")
+    if solid != 1:
+        errors.append(f"the homepage must show exactly one solid primary CTA, found {solid}")
+    for anchor in (
+        'data-od-id="home-primary-order"',
+        'data-od-id="home-secondary-catering"',
+        'data-od-id="home-catering-pricing"',
+    ):
+        if anchor not in html:
+            errors.append(f"index.html is missing a locked action anchor: {anchor}")
+
+    # 7. Routes, contact points and the locked section order.
+    for route in ('href="/order/"', 'href="/catering/"', 'href="/about/"', 'href="/faq/"',
+                  'href="tel:+19297424202"', 'href="sms:+19297424202"',
+                  'href="mailto:islanddelicacy@outlook.com"'):
+        if route not in html:
+            errors.append(f"index.html dropped a required destination: {route}")
+    for section in ("home-hero", "home-how-it-works", "home-owner", "home-catering", "home-proof"):
+        if f'data-od-id="{section}"' not in html:
+            errors.append(f"index.html is missing the locked section: {section}")
+
+    # 8. Authentic owner presence, using the approved portrait at its real ratio.
+    portrait = "/assets/gallery/shantay-owner.webp"
+    if portrait not in html:
+        errors.append("the homepage must carry Shantay's approved owner portrait")
+    if 'width="1200" height="1500"' not in html:
+        errors.append("the owner portrait must declare its intrinsic 1200x1500 dimensions")
+    if not (ROOT / portrait.lstrip("/")).is_file():
+        errors.append(f"owner portrait file is missing: {portrait}")
+
+    # 9. Cutoff truth stays computed, never hard-coded.
+    if "data-cutoff-line" not in html or "data-earliest-label" not in html:
+        errors.append("index.html must keep the live cutoff and earliest-pickup bindings")
+    if re.search(r"\b(Mon|Tue|Wed|Thu|Fri|Sat|Sun), (Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec) \d", html):
+        errors.append("index.html hard-codes a pickup date instead of computing it")
+
+    # 10. Accessibility floor and layout-shift protection.
+    if 'class="skip-link"' not in html or ".skip-link{" not in css:
+        errors.append("the homepage must provide a skip-to-content link")
+    if "min-height:44px" not in css:
+        errors.append("styles.css lost the 44px touch-target floor")
+    if ":focus-visible" not in css:
+        errors.append("styles.css lost its visible focus indicators")
+    if "prefers-reduced-motion" not in css:
+        errors.append("styles.css must honour prefers-reduced-motion")
+    if ".footer img{width:150px;height:auto}" not in css:
+        errors.append("the footer logo must scale by ratio, not to its intrinsic height")
+    for tag in re.findall(r"<img [^>]*>", html):
+        if 'width="' not in tag or 'height="' not in tag:
+            errors.append(f"every homepage image must declare dimensions: {tag[:70]}")
+    return errors
+
+
 class QuietHandler(http.server.SimpleHTTPRequestHandler):
     def log_message(self, format: str, *args: object) -> None:
         pass
@@ -360,13 +496,13 @@ def verify_http() -> list[str]:
 
 
 def main() -> int:
-    errors = verify_files() + verify_order_design() + verify_order_clarity() + verify_catering() + verify_about() + verify_http()
+    errors = verify_files() + verify_order_design() + verify_order_clarity() + verify_catering() + verify_about() + verify_homepage() + verify_http()
     if errors:
         print(f"FAIL: {len(errors)} clean-route issue(s)")
         for error in errors:
             print(f"- {error}")
         return 1
-    print("PASS: clean routes, 16 optimized menu photos, side imagery, lightbox hooks, sitemap, assets, HTTP routes, grouped order summary, pre-Square review, and return receipt")
+    print("PASS: clean routes, 16 optimized menu photos, side imagery, lightbox hooks, sitemap, assets, HTTP routes, grouped order summary, pre-Square review, return receipt, and the locked homepage contract")
     return 0
 
 
