@@ -1,14 +1,17 @@
 # Fall Fest menu: pre-implementation UI contract
 
-Stage: isolated preview branch; no public publishing authorized. User explicitly selected HTML with the generated flyer's seasonal styling, and a cleaner evergreen canopy wrap without added foliage.
+## Authorized release refinement
+Bruce approved public publishing. His subsequent clarification selects generated October/Jamaican botanical borders with the background removed, NOT additional food-photo boxes. Preserve live menu text, original hero plate, prices and normal checkout. Use true-alpha decorative cutouts in the margins over warm cream; retain a readable center and lighter mobile framing. The permanent link hub stays clean and year-round. Required before push: current origin/main ancestry, rollback anchor, four-width browser tests, existing tests and fresh visual QA. Required after push: GitHub deployment result plus exact live HTML/CSS readback and browser exercise. No final QR without verified social destinations.
+
+Stage: public release explicitly authorized by Bruce after preview. User explicitly selected HTML with the generated flyer's seasonal styling, and a cleaner evergreen canopy wrap without added foliage.
 
 ## Lightweight design lock
 Primary visitor: phone user coming from a QR or homepage feature. Three-second takeaway: Island Delicacy at Home Church Fall Fest, when/where, and a clearly labeled event menu with $35/$25 meal prices and included drink. The event must not masquerade as normal preorder checkout.
 
-Chosen composition: illustrated forest-green event masthead with exact logo, live expressive cream/gold heading and an isolated plate illustration; then a clean white typographic menu, not product cards. Desktop uses two columns for event introduction/photo, followed by menu list plus compact sides/drinks column. Mobile puts title/date/menu jump first, reduces decorative artwork, and shows all four prices without horizontal scrolling. Tablet transitions at 760px. An all-poster image page was rejected because menu text must remain real HTML. A shop-card/cart design was rejected because this is a distinct event menu, not an authorized event checkout build.
+Chosen composition: illustrated forest-green event masthead with exact logo, live expressive cream/gold heading and an isolated plate illustration; then a warm cream typographic menu framed with transparent October/Jamaican botanical art, not product cards. Desktop uses two columns for event introduction/photo, followed by menu list plus compact sides/drinks column. Mobile puts title/date/menu jump first, reduces decorative artwork, and shows all four prices without horizontal scrolling. Tablet transitions at 760px. An all-poster image page was rejected because menu text must remain real HTML. A shop-card/cart design was rejected because this is a distinct event menu, not an authorized event checkout build.
 
 Frames:
-- Desktop 1440x1000: slim logo navigation; green two-column event introduction; white two-column menu; venue/directions and pricing context.
+- Desktop 1440x1000: slim logo navigation; green two-column event introduction; botanical-framed two-column menu; venue/directions and pricing context.
 - Mobile 390x844 and 320x780: slim logo navigation; live heading/date and menu-jump CTA; contained plate; stacked live menu rows; simple sides/drinks; directions.
 - Menu anchor/detail: four named meals, full prices, included drink, sides list, drink-only price. No fabricated flavor/allergen/portion claims or choice rules.
 

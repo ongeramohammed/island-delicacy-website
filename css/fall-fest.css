@@ -6,3 +6,13 @@
 @media(max-width:350px){.event-nav{padding:10px 14px}.event-nav nav{gap:12px}.event-nav nav a{font-size:11px}.hero-inner{padding:30px 18px 22px}.menu-section{padding-left:18px;padding-right:18px}.section-intro h2{font-size:30px}.meal-list h3{font-size:23px}.sides{padding:22px}.visit{margin-left:14px;margin-right:14px;padding:23px}.eyebrow{font-size:10px}}
 @media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}}
 @media print{.event-nav,.menu-jump,.visit-actions,.regular-note,.event-footer{display:none}.hero-inner{padding:25px;grid-template-columns:1fr 1fr}.hero-copy h1 .church{font-size:34px}.hero-copy h1 .fest{font-size:50px}.menu-section{padding:25px}.menu-grid{grid-template-columns:1.5fr 1fr;gap:25px}.visit{margin:10px 20px;padding:20px}.meal-list li{padding:12px 0}body{-webkit-print-color-adjust:exact;print-color-adjust:exact}}
+/* October botanical cutouts frame the page without adding photo boxes or competing with live menu text. */
+.fall-page{background:#f3e4c8}
+.festival-body{background-color:#f3e4c8;background-image:linear-gradient(90deg,transparent 0%,rgba(243,228,200,.25) 5%,#f3e4c8 18%,#f3e4c8 82%,rgba(243,228,200,.25) 95%,transparent 100%),url('/assets/events/fall-fest/october-border-left.webp'),url('/assets/events/fall-fest/october-border-right.webp');background-position:center,left top,right bottom;background-size:100% 100%,clamp(145px,20vw,300px) auto,clamp(145px,20vw,300px) auto;background-repeat:no-repeat,repeat-y,repeat-y}
+.fall-page .menu-section{padding-top:52px;padding-bottom:44px}
+.fall-page .menu-grid{gap:42px}
+.fall-page .sides{background:#ead6ad}
+.fall-page .visit{background:#e8d5ad;margin-bottom:36px}
+.fall-page .regular-note{padding-bottom:38px}
+@media(max-width:760px){.festival-body{background-image:linear-gradient(90deg,transparent,#f3e4c8 8%,#f3e4c8 92%,transparent),url('/assets/events/fall-fest/october-border-left.webp'),url('/assets/events/fall-fest/october-border-right.webp');background-size:100% 100%,145px auto,145px auto}.fall-page .menu-section{padding-top:38px;padding-bottom:32px}.fall-page .menu-grid{gap:24px}}
+@media print{.fall-page,.festival-body{background:#fff!important}.fall-page .menu-section{padding:25px}}

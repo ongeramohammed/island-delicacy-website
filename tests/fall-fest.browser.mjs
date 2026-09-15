@@ -4,11 +4,11 @@ import {createReadStream,existsSync,statSync,mkdirSync,writeFileSync} from 'node
 import path from 'node:path';
 import {fileURLToPath} from 'node:url';
 const ROOT=path.resolve(path.dirname(fileURLToPath(import.meta.url)),'..');
-const OUT='/home/bruce/output/island-delicacy-fall-fest-web';mkdirSync(OUT,{recursive:true});
+const OUT=process.env.FALL_FEST_OUT||'/home/bruce/output/island-delicacy-fall-fest-web';mkdirSync(OUT,{recursive:true});
 const {chromium}=await import('/home/bruce/open-design/node_modules/.pnpm/playwright@1.60.0/node_modules/playwright/index.mjs');
 const mime={'.html':'text/html','.js':'text/javascript','.css':'text/css','.png':'image/png','.webp':'image/webp','.ttf':'font/ttf','.ico':'image/x-icon'};
 const server=http.createServer((req,res)=>{let rel=decodeURIComponent(req.url.split('?')[0]);if(rel.endsWith('/'))rel+='index.html';const f=path.join(ROOT,rel);if(!f.startsWith(ROOT)||!existsSync(f)||!statSync(f).isFile()){res.writeHead(404);res.end('not found');return;}res.writeHead(200,{'Content-Type':mime[path.extname(f)]||'application/octet-stream'});createReadStream(f).pipe(res);});
-await new Promise(r=>server.listen(0,'127.0.0.1',r));const base=`http://127.0.0.1:${server.address().port}`;const browser=await chromium.launch();const checks=[];
+await new Promise(r=>server.listen(0,'127.0.0.1',r));const base=process.env.TEST_BASE_URL||`http://127.0.0.1:${server.address().port}`;const browser=await chromium.launch();const checks=[];
 const expected=[['Oxtail','$35'],['Curry Chicken','$25'],['Jerk Chicken','$25'],['Barbi-fried Chicken','$25']];
 try{
  for(const width of [320,390,768,1440]){

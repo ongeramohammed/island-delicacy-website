@@ -1,0 +1,14 @@
+{
+  "source": "openai_codex_gpt-image-2-medium_20260915_202007_189c680b.png",
+  "method": "neutral checkerboard chroma matting; gray removed; alpha genuinely stored",
+  "alpha_range": [
+    0,
+    255
+  ],
+  "transparent_fraction": 0.6725591023763021,
+  "files": [
+    "october-borders-cutout.png",
+    "october-border-left.webp",
+    "october-border-right.webp"
+  ]
+}
