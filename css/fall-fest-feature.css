@@ -1,0 +1,3 @@
+/* The homepage has no animated in-page storytelling: keep focus/skip-link scrolling immediate when the event strip changes its geometry. */
+html{scroll-behavior:auto}
+.fall-feature{background:#103d29;color:#fff3d7;border-bottom:1px solid #e9b13b44}.fall-feature[hidden]{display:none}.fall-feature a{max-width:1180px;margin:auto;padding:13px 32px;display:flex;align-items:center;justify-content:space-between;gap:18px;min-height:52px;text-decoration:none;font-size:14px}.fall-feature strong{color:#f3cc63}.fall-feature a>span:last-child{font-weight:750;white-space:nowrap}.fall-feature a:focus-visible{outline:3px solid #f3cc63;outline-offset:-4px}@media(max-width:580px){.fall-feature a{padding:14px 20px;align-items:flex-start;flex-direction:column;gap:3px;font-size:13px}}

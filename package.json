@@ -5,6 +5,7 @@
   "scripts": {
     "test": "node --test tests/order-format.test.mjs tests/cross-surface-contract.test.mjs",
     "test:ui": "node tests/order-ui.browser.mjs",
-    "test:home": "node tests/homepage-ui.browser.mjs"
+    "test:home": "node tests/homepage-ui.browser.mjs",
+    "test:fall-fest": "node tests/fall-fest.browser.mjs"
   }
 }
