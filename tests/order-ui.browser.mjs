@@ -83,6 +83,8 @@ async function waitForNavigation(events, match, timeout = 4000) {
 
 /** Builds the standard 4-line / 6-item synthetic order and records checkout attempts. */
 async function buildOrder(page, base, { plates = PLATES, sides = ['Sweet Plantains', 'Sweet Plantains'] } = {}) {
+  // The receipt fixture asserts Wednesday; pin its order date instead of depending on the run day.
+  await page.clock.setFixedTime(new Date('2026-09-01T09:00:00-07:00'));
   const events = await watchNavigation(page);
   await page.route('**/api/checkout', async (route) => {
     events.checkoutRequests.push(JSON.parse(route.request().postData() || '{}'));

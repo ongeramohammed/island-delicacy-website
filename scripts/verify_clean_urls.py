@@ -312,7 +312,7 @@ def verify_about() -> list[str]:
         "a love of cooking that started at home",
         "/assets/gallery/shantay-owner.webp",
         'width="1200" height="1500"',
-        "/css/styles.css?v=20260818-shantay-photo-1",
+        "/css/styles.css?v=20260917-events-nav-1",
     ):
         if required not in html:
             errors.append(f"about/index.html missing approved story correction: {required}")
