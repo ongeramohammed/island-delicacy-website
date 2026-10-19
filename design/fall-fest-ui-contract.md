@@ -6,7 +6,7 @@ Bruce approved public publishing. His subsequent clarification selects generated
 Stage: public release explicitly authorized by Bruce after preview. User explicitly selected HTML with the generated flyer's seasonal styling, and a cleaner evergreen canopy wrap without added foliage.
 
 ## Lightweight design lock
-Primary visitor: phone user coming from a QR or homepage feature. Three-second takeaway: Island Delicacy at Home Church Fall Fest, when/where, and a clearly labeled event menu with $35/$25 meal prices and included drink. The event must not masquerade as normal preorder checkout.
+Primary visitor: phone user coming from a QR or homepage feature. Three-second takeaway: Island Delicacy at Home Church Fall Fest, when/where, and a clearly labeled event menu with $30/$25 meal prices and included drink. The event must not masquerade as normal preorder checkout.
 
 Chosen composition: illustrated forest-green event masthead with exact logo, live expressive cream/gold heading and an isolated plate illustration; then a warm cream typographic menu framed with transparent October/Jamaican botanical art, not product cards. Desktop uses two columns for event introduction/photo, followed by menu list plus compact sides/drinks column. Mobile puts title/date/menu jump first, reduces decorative artwork, and shows all four prices without horizontal scrolling. Tablet transitions at 760px. An all-poster image page was rejected because menu text must remain real HTML. A shop-card/cart design was rejected because this is a distinct event menu, not an authorized event checkout build.
 
@@ -16,7 +16,7 @@ Frames:
 - Menu anchor/detail: four named meals, full prices, included drink, sides list, drink-only price. No fabricated flavor/allergen/portion claims or choice rules.
 
 ## Exact copy
-Home Church Fall Fest. Saturday, October 31, 2026. 5:30–8:30 PM Pacific. 766 28th St, San Diego, CA 92102. Rides & candy for the kids! Oxtail $35; Curry Chicken $25; Jerk Chicken $25; Barbi-fried Chicken $25. Sides: Rice and peas, White rice, Plantains, Vegetables. Each meal includes a drink. Drink only $6. Prices shown apply to this event. Regular preorder menu and event menus are priced separately.
+Home Church Fall Fest. Saturday, October 31, 2026. 5:30–8:30 PM Pacific. 766 28th St, San Diego, CA 92102. Rides & candy for the kids! Oxtail $30; Curry Chicken $25; Jerk Chicken $25; Barbi-fried Chicken $25. Sides: Rice and peas, White rice, Plantains, Vegetables. Each meal includes a drink. Drink only $6. Prices shown apply to this event. Regular preorder menu and event menus are priced separately.
 
 ## States and boundaries
 Menu is static readable HTML, functional without JS. Client-side enhancement labels the event upcoming/happening/past, hides homepage/connection promotions at event end, and retains a clearly archived event menu afterward. No checkout/payment requests or changes to worker/order/menu logic. Links to the normal menu clearly say regular preorder menu. No ordering-by-phone CTA added to this event page. Exact social-profile destinations have not been verified: do not fabricate or ship fake social buttons. Connect preview includes only known website/menu/catering and active-event links; social completion is a documented gate. No production QR released until the hub is published and destinations verified.
