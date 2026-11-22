@@ -8,7 +8,7 @@ Customers build their plates on the order page, check a full review of the order
 
 | URL | What it is |
 | --- | --- |
-| `/` | Home: hero, featured plates, how preorder works, owner section, catering trays, customer quotes |
+| `/` | Home: food hero that crossfades like a muted video, how preorder works, a swipe row of every plate, owner section, catering trays, kitchen photos, customer quotes |
 | `/order/` | Preorder builder: plates, sides, extras, notes, pickup date, review sheet and checkout |
 | `/catering/` | Tray options and catering inquiry form |
 | `/events/` | Events and pop-ups, with the current event and its flyer |
@@ -51,7 +51,7 @@ The catering form doesn't post to a server. It builds the inquiry and lets the c
 ## Photos and brand assets
 
 - The 12 orderable plates and 4 side choices each have their own 1400×1400 WebP photo in `assets/menu/`.
-- The homepage features Oxtail, Jerk Chicken, Curry Goat and Shrimp Rasta Pasta.
+- The homepage (`index.html` + `css/home.css`) lists every plate in a swipe row built by `hydrateMenuStrip()` in `js/main.js` from `window.ISLAND_MENU`, using 480px square copies in `assets/home/menu/`. Add a plate to `js/menu.js` and add its 480px copy there too. Hero, catering and kitchen photos are in `assets/home/`; fonts (Archivo, Source Serif 4, OFL) are in `assets/fonts/`. See `design/homepage-direction-2026-11.md`.
 - Order-page thumbnails open a tap-to-enlarge lightbox; `Esc` closes it.
 - Event artwork, the approved flyer and font licenses are in `assets/events/fall-fest/`, with provenance notes.
 - `BRAND-IMAGE-GUIDE.md` covers photo priorities and visual style for future updates. `design/` holds the UI notes for the events pages.

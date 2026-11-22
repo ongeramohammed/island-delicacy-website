@@ -61,8 +61,8 @@ def verify_files() -> list[str]:
     for required in ("window.SIDE_IMAGES", "data-menu-lightbox", "data-zoom-item"):
         if required not in menu_js + main_js:
             errors.append(f"menu photography integration missing: {required}")
-    if ".home-plate img{" not in css:
-        errors.append("homepage hero is not using the menu photography board")
+    if ".plate img{" not in (ROOT / "css" / "home.css").read_text(encoding="utf-8"):
+        errors.append("homepage menu strip is not using the menu photography")
     for target in menu_assets:
         asset = ROOT / target.lstrip("/")
         if not asset.is_file():
@@ -352,18 +352,21 @@ def verify_faq_checkout_truth() -> list[str]:
 
 
 def verify_homepage() -> list[str]:
-    """The locked homepage contract: source-driven plate board, truthful Square
-    copy, one primary CTA, real owner photography and no type over a photo.
+    """The homepage contract: source-driven menu strip, truthful Square copy,
+    clear order/catering actions, real owner photography, live cutoff truth.
 
-    Contract of record: TASK-20260831-05, design/homepage-direction-lock.md.
+    Direction of record: Bruce, 2026-11-21 (design/homepage-direction-2026-11.md),
+    replacing the 2026-08-31 board-only lock: a full-bleed food hero that crossfades
+    like a muted video, three hero actions, a swipe row of every plate, a catering
+    panel, kitchen photos and the real customer quotes.
     """
     errors: list[str] = []
     html = (ROOT / "index.html").read_text(encoding="utf-8")
-    css = (ROOT / "css" / "styles.css").read_text(encoding="utf-8")
+    css = (ROOT / "css" / "home.css").read_text(encoding="utf-8")
     main_js = (ROOT / "js" / "main.js").read_text(encoding="utf-8")
     menu_js = (ROOT / "js" / "menu.js").read_text(encoding="utf-8")
 
-    # 1. Pre-launch Square language is now false: production checkout is live.
+    # 1. Pre-launch Square language is false: production checkout is live.
     for stale in (
         "Square will enforce real sold-out status",
         "once payment links are connected",
@@ -373,14 +376,11 @@ def verify_homepage() -> list[str]:
     ):
         if stale in html:
             errors.append(f"index.html still ships stale pre-launch Square copy: {stale}")
-    for truthful in (
-        "before anything is sent",
-        "pay securely through Square",
-    ):
+    for truthful in ("before anything is sent", "pay securely through Square"):
         if truthful not in html:
             errors.append(f"index.html is missing the truthful checkout description: {truthful}")
 
-    # 2. Never claim inventory the site does not track.
+    # 2. Never claim inventory the site does not track, or same-day plates.
     for forbidden in ("sold out", "sold-out", "only a few left", "selling fast"):
         if forbidden.lower() in html.lower():
             errors.append(f"index.html claims inventory status it cannot know: {forbidden}")
@@ -390,72 +390,59 @@ def verify_homepage() -> list[str]:
         if same_day in html.lower():
             errors.append(f"index.html promises same-day availability: {same_day}")
 
-    # 3. The menu preview is rendered from window.ISLAND_MENU, never duplicated.
-    if "data-menu-preview" not in html:
-        errors.append("index.html is missing the source-driven menu preview mount point")
-    if "window.ISLAND_MENU" not in main_js:
-        errors.append("main.js no longer reads the menu from window.ISLAND_MENU")
+    # 3. The menu strip is rendered from window.ISLAND_MENU, never duplicated.
+    if "data-menu-strip" not in html or "function hydrateMenuStrip" not in main_js:
+        errors.append("index.html must mount the source-driven menu strip (data-menu-strip + hydrateMenuStrip)")
     if "data-menu-range" not in html or "data-menu-range" not in main_js:
         errors.append("the plate count and price range must be derived from window.ISLAND_MENU")
     names = re.findall(r"name:'([^']+)'", menu_js)
     prices = sorted({int(price) for price in re.findall(r"price:(\d+)", menu_js)})
     if len(names) != 12 or not prices:
         errors.append(f"unexpected menu shape: {len(names)} names, {len(prices)} price points")
+    # The catering tray list is its own price list (it mirrors /catering/), and alt
+    # text describes photographs; neither is the plate menu, so both are skipped here.
+    menu_scope = re.sub(r'<ul class="trays">.*?</ul>', "", html, flags=re.S)
+    menu_scope = re.sub(r'\salt="[^"]*"', "", menu_scope)
     for name in names:
-        if name in html:
+        if name in menu_scope:
             errors.append(f"index.html hard-codes the menu item '{name}' instead of reading window.ISLAND_MENU")
     for price in prices:
-        if f"${price}" in html:
+        # Word-bounded so catering tray prices ($120, $220) don't count as plate prices.
+        if re.search(r"\$%d(?!\d)" % price, menu_scope):
             errors.append(f"index.html hard-codes the price ${price} instead of reading window.ISLAND_MENU")
 
-    # 4. The featured board must resolve to real, existing first-party photos.
-    featured = re.search(r"const featuredIds=\[([^\]]+)\]", main_js)
-    if not featured:
-        errors.append("main.js no longer declares the featured plate board")
-    else:
-        ids = re.findall(r"'([^']+)'", featured.group(1))
-        if len(ids) != 4:
-            errors.append(f"the homepage board is locked to 4 plates, found {len(ids)}")
-        for item_id in ids:
-            match = re.search(r"id:'%s'.*?image:'([^']+)'" % re.escape(item_id), menu_js)
-            if not match:
-                errors.append(f"featured plate '{item_id}' is not in js/menu.js")
-            elif not (ROOT / match.group(1).lstrip("/")).is_file():
-                errors.append(f"featured plate photo is missing: {match.group(1)}")
+    # 4. Every plate has its square 480px strip photo next to the 1400px original.
+    for image in sorted(set(re.findall(r"image:'(/assets/menu/[^']+)'", menu_js))):
+        thumb = ROOT / image.replace("/assets/menu/", "/assets/home/menu/").lstrip("/")
+        if not thumb.is_file():
+            errors.append(f"menu strip photo is missing: {thumb.relative_to(ROOT)}")
+        elif thumb.stat().st_size > 120_000:
+            errors.append(f"menu strip photo exceeds 120 KB: {thumb.relative_to(ROOT)}")
+    if 'width="480" height="480"' not in main_js:
+        errors.append('strip photos must declare their intrinsic width="480" height="480"')
+    if "aspect-ratio:1/1" not in css.split(".plate img{")[-1][:120]:
+        errors.append(".plate img must render the square photos 1:1, never re-cropped")
 
-    # 5. Square photography, declared intrinsic size, and no type over any photo.
-    if 'width="1400" height="1400"' not in main_js:
-        errors.append('board photos must declare their intrinsic width="1400" height="1400"')
-    if "aspect-ratio:1/1" not in css.split(".home-plate img{")[-1][:160]:
-        errors.append(".home-plate img must render the square photos 1:1, never re-cropped")
-    if 'class="chip"' in main_js:
-        errors.append("the homepage board must not overlay a chip on the photography")
-    if "home-plate" in css and "position:absolute" in css.split(".home-plate{")[-1][:400]:
-        errors.append("nothing may be absolutely positioned over a plate photograph")
-
-    # 6. One dominant order CTA, one clearly secondary catering path.
-    solid = html.count("btn btn-gold") + html.count("btn btn-primary")
-    if solid != 1:
-        errors.append(f"the homepage must show exactly one solid primary CTA, found {solid}")
+    # 5. Clear actions: order first, catering as its own path.
     for anchor in (
         'data-od-id="home-primary-order"',
         'data-od-id="home-secondary-catering"',
         'data-od-id="home-catering-pricing"',
     ):
         if anchor not in html:
-            errors.append(f"index.html is missing a locked action anchor: {anchor}")
+            errors.append(f"index.html is missing an action anchor: {anchor}")
 
-    # 7. Routes, contact points and the locked section order.
-    for route in ('href="/order/"', 'href="/catering/"', 'href="/about/"', 'href="/faq/"',
+    # 6. Routes, contact points and the sections.
+    for route in ('href="/order/"', 'href="/catering/"', 'href="/about/"', 'href="/faq/"', 'href="/events/"',
                   'href="tel:+19297424202"', 'href="sms:+19297424202"',
                   'href="mailto:islanddelicacy@outlook.com"'):
         if route not in html:
             errors.append(f"index.html dropped a required destination: {route}")
     for section in ("home-hero", "home-how-it-works", "home-owner", "home-catering", "home-proof"):
         if f'data-od-id="{section}"' not in html:
-            errors.append(f"index.html is missing the locked section: {section}")
+            errors.append(f"index.html is missing the section: {section}")
 
-    # 8. Authentic owner presence, using the approved portrait at its real ratio.
+    # 7. Authentic owner presence, using the approved portrait at its real ratio.
     portrait = "/assets/gallery/shantay-owner.webp"
     if portrait not in html:
         errors.append("the homepage must carry Shantay's approved owner portrait")
@@ -464,26 +451,30 @@ def verify_homepage() -> list[str]:
     if not (ROOT / portrait.lstrip("/")).is_file():
         errors.append(f"owner portrait file is missing: {portrait}")
 
-    # 9. Cutoff truth stays computed, never hard-coded.
-    if "data-cutoff-line" not in html or "data-earliest-label" not in html:
-        errors.append("index.html must keep the live cutoff and earliest-pickup bindings")
+    # 8. Cutoff truth stays computed, never hard-coded.
+    for binding in ("data-cutoff-bar", "data-cutoff-line", "data-earliest-label"):
+        if binding not in html:
+            errors.append(f"index.html must keep the live cutoff binding: {binding}")
     if re.search(r"\b(Mon|Tue|Wed|Thu|Fri|Sat|Sun), (Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec) \d", html):
         errors.append("index.html hard-codes a pickup date instead of computing it")
 
-    # 10. Accessibility floor and layout-shift protection.
+    # 9. Accessibility floor, motion and layout-shift protection.
     if 'class="skip-link"' not in html or ".skip-link{" not in css:
         errors.append("the homepage must provide a skip-to-content link")
     if "min-height:44px" not in css:
-        errors.append("styles.css lost the 44px touch-target floor")
+        errors.append("home.css lost the 44px touch-target floor")
     if ":focus-visible" not in css:
-        errors.append("styles.css lost its visible focus indicators")
+        errors.append("home.css lost its visible focus indicators")
     if "prefers-reduced-motion" not in css:
-        errors.append("styles.css must honour prefers-reduced-motion")
-    if ".footer img{width:150px;height:auto}" not in css:
-        errors.append("the footer logo must scale by ratio, not to its intrinsic height")
+        errors.append("home.css must honour prefers-reduced-motion")
+    if 'id="hero-pause"' not in html:
+        errors.append("the moving hero must keep its pause control")
     for tag in re.findall(r"<img [^>]*>", html):
         if 'width="' not in tag or 'height="' not in tag:
             errors.append(f"every homepage image must declare dimensions: {tag[:70]}")
+    for target in re.findall(r'(?:src|href)="(/assets/home/[^"?#]+)"', html) + re.findall(r"url\((/assets/[^)]+)\)", css):
+        if not (ROOT / target.lstrip("/")).is_file():
+            errors.append(f"homepage asset is missing: {target}")
     return errors
 
 
@@ -523,7 +514,7 @@ def main() -> int:
         for error in errors:
             print(f"- {error}")
         return 1
-    print("PASS: clean routes, 16 optimized menu photos, side imagery, lightbox hooks, sitemap, assets, HTTP routes, grouped order summary, pre-Square review, return receipt, and the locked homepage contract")
+    print("PASS: clean routes, 16 optimized menu photos, side imagery, lightbox hooks, sitemap, assets, HTTP routes, grouped order summary, pre-Square review, return receipt, and the homepage contract")
     return 0
 
 

@@ -16,95 +16,190 @@
   <link rel="icon" href="/favicon.ico">
   <link rel="apple-touch-icon" href="/assets/icons/apple-touch-icon.png">
   <link rel="manifest" href="/site.webmanifest">
-  <link rel="preload" as="image" href="/assets/menu/oxtail.webp" fetchpriority="high">
-  <link rel="stylesheet" href="/css/styles.css?v=20260917-events-nav-1">
+  <link rel="preload" as="image" href="/assets/home/hero-fish-1536.webp" imagesrcset="/assets/home/hero-fish-768.webp 768w, /assets/home/hero-fish-1536.webp 1536w" imagesizes="100vw" fetchpriority="high">
+  <link rel="preload" as="font" type="font/woff2" href="/assets/fonts/archivo-var-latin.woff2" crossorigin>
+  <link rel="stylesheet" href="/css/home.css?v=20261121-home-redesign">
   <link rel="stylesheet" href="/css/fall-fest-feature.css">
   <script src="/js/fall-fest.js" defer></script>
 </head>
 <body>
 <a class="skip-link" href="#main">Skip to content</a>
-<div class="announcement" data-cutoff-bar>Orders close at 10:00 AM daily</div>
-<header class="site-header">
-  <nav class="nav" aria-label="Main navigation">
-    <a class="brand" href="/" aria-label="Island Delicacy home"><img src="/assets/brand/logo-cream.png" width="1575" height="1027" alt="Island Delicacy"></a>
-    <button class="menu-toggle" type="button" data-menu-toggle>MENU</button>
-    <div class="nav-links">
-      <a href="/" class="active" aria-current="page">Home</a><a href="/order/" class="">Order</a><a href="/catering/" class="">Catering</a><a href="/events/">Events</a><a href="/about/" class="">About</a><a href="/faq/" class="">FAQ</a>
-    </div>
-    <div class="nav-actions"><a class="phone" href="tel:+19297424202">(929) 742-4202</a><a class="btn btn-cream" href="/order/">Order for <span data-earliest-label>tomorrow</span></a></div>
-  </nav>
-</header>
+<div class="announce" data-cutoff-bar>Orders close at 10:00 AM daily</div>
 <aside class="fall-feature" data-fall-feature hidden aria-label="Upcoming event"><a href="/events/home-church-fall-fest/"><span><strong>Home Church Fall Fest</strong> · October 31, 5:30–8:30 PM</span><span>View event menu &amp; prices →</span></a></aside>
+
+<header class="hdr">
+  <div class="wrap">
+    <a class="logo" href="/" aria-label="Island Delicacy home"><img src="/assets/home/logo-cream.webp" width="280" height="183" alt="Island Delicacy"></a>
+    <button class="menu-toggle" type="button" data-menu-toggle aria-label="Open the menu">Menu</button>
+    <nav class="nav-links" aria-label="Main navigation">
+      <a href="#menu">Menu</a><a href="/catering/">Catering</a><a href="/events/">Events</a><a href="/about/">About</a><a href="/faq/">FAQ</a>
+    </nav>
+    <div class="acts">
+      <a class="phone" href="tel:+19297424202">(929) 742-4202</a>
+      <a class="btn gold" href="/order/"><span>Order for <span data-earliest-label>tomorrow</span></span></a>
+    </div>
+  </div>
+</header>
+
 <main id="main">
-  <section class="home-hero" data-od-id="home-hero">
-    <div class="container home-hero-grid">
-      <div class="home-hero-copy">
-        <p class="eyebrow">Jamaican &amp; Caribbean · San Diego</p>
-        <h1 class="home-title">Cooked to order.<br><em>Never held over.</em></h1>
-        <p class="home-lead">A preorder kitchen, not a restaurant.<span class="home-lead-more"> Every plate is shopped, seasoned and cooked for the person who ordered it — which is why we ask for a day's notice.</span></p>
-        <p class="home-clock"><b>Order by 10&nbsp;AM</b><span data-cutoff-line>Orders close at 10 AM.</span></p>
-        <p class="home-actions">
-          <a class="btn btn-gold" href="/order/" data-od-id="home-primary-order">Start an order</a>
-          <a class="textlink" href="/catering/" data-od-id="home-secondary-catering">Catering &amp; trays</a>
-        </p>
+  <section class="hero" data-od-id="home-hero" aria-labelledby="hero-title">
+    <input type="checkbox" id="hero-pause" class="sr-only" aria-label="Pause the background photos">
+    <div class="slides" aria-hidden="true">
+      <figure class="s s1"><img src="/assets/home/hero-fish-1536.webp" srcset="/assets/home/hero-fish-768.webp 768w, /assets/home/hero-fish-1536.webp 1536w" sizes="100vw" width="1536" height="1024" alt="" fetchpriority="high"></figure>
+      <figure class="s s2"><img src="/assets/home/hero-jerk-1264.webp" srcset="/assets/home/hero-jerk-768.webp 768w, /assets/home/hero-jerk-1264.webp 1264w" sizes="100vw" width="1264" height="848" alt="" decoding="async"></figure>
+      <figure class="s s3"><img src="/assets/home/hero-oxtail-1536.webp" srcset="/assets/home/hero-oxtail-768.webp 768w, /assets/home/hero-oxtail-1536.webp 1536w" sizes="100vw" width="1536" height="1024" alt="" decoding="async"></figure>
+      <figure class="s s4"><img src="/assets/home/hero-shrimp-1536.webp" srcset="/assets/home/hero-shrimp-768.webp 768w, /assets/home/hero-shrimp-1536.webp 1536w" sizes="100vw" width="1536" height="1024" alt="" decoding="async"></figure>
+      <figure class="s s5"><img src="/assets/home/hero-pasta-1536.webp" srcset="/assets/home/hero-pasta-768.webp 768w, /assets/home/hero-pasta-1536.webp 1536w" sizes="100vw" width="1536" height="1024" alt="" decoding="async"></figure>
+    </div>
+    <div class="shade"></div>
+    <div class="hero-in wrap">
+      <p class="eyebrow">Jamaican &amp; Caribbean preorder kitchen · San Diego</p>
+      <h1 id="hero-title">Cooked to order. <em>Never held over.</em></h1>
+      <p class="lead">Island plates made fresh for the person who ordered them. Order by 10 AM, pick it up tomorrow.</p>
+      <div class="cta3">
+        <a class="btn gold" href="/order/" data-od-id="home-primary-order"><span>Order for <span data-earliest-label>tomorrow</span></span></a>
+        <a class="btn line" href="#menu">See the menu</a>
+        <a class="btn line" href="#catering" data-od-id="home-secondary-catering">Catering trays</a>
       </div>
-      <div class="home-board-wrap">
-        <div class="home-board" data-menu-preview data-od-id="home-plate-board"></div>
-        <p class="home-board-foot"><span data-menu-range>Every plate is cooked for your pickup day.</span><a href="/order/" data-od-id="home-board-menu-link">See the full menu</a></p>
-      </div>
+      <p class="clock" data-cutoff-line>Orders close at 10 AM for next-day pickup.</p>
+    </div>
+    <div class="pause"><label for="hero-pause"><span class="off">❚❚ Pause</span><span class="on">▶ Play</span></label></div>
+  </section>
+
+  <section class="steps" data-od-id="home-how-it-works" aria-labelledby="steps-title">
+    <div class="wrap">
+      <h2 class="sr-only" id="steps-title">How preorder works</h2>
+      <ol>
+        <li><b>01</b><h3>Build your plate</h3><p>Pick a plate and two sides. Most plates come with rice &amp; peas.</p></li>
+        <li><b>02</b><h3>Check it, then pay</h3><p>See every plate written out before anything is sent, then pay securely through Square. No account needed.</p></li>
+        <li><b>03</b><h3>We text your time</h3><p>Pick a date. We text you on pickup day to set the time.</p></li>
+      </ol>
     </div>
   </section>
 
-  <section class="container home-band" data-od-id="home-how-it-works">
-    <p class="eyebrow">How preorder works</p>
-    <h2 class="section-title">Order today. Pick it up tomorrow.</h2>
-    <ol class="home-rail">
-      <li data-od-id="home-step-build"><p class="home-rail-n">01</p><h3>Build your plate</h3><p>Pick a plate, exactly two sides, quantity and a pickup date. Most plates include rice &amp; peas; rasta pasta plates take it as a side instead.</p></li>
-      <li data-od-id="home-step-pay"><p class="home-rail-n">02</p><h3>Check it, then pay</h3><p>You see every plate, side, extra and leave-off request written out before anything is sent. Then you pay securely through Square — no account needed.</p></li>
-      <li data-od-id="home-step-pickup"><p class="home-rail-n">03</p><h3>We text your time</h3><p>You choose the date; we text you on pickup day to set the time. The kitchen takes up to 30 plates per pickup day.</p></li>
-    </ol>
+  <section class="sec" id="menu" aria-labelledby="menu-title">
+    <div class="wrap">
+      <div class="head">
+        <div>
+          <p class="eyebrow">On the menu</p>
+          <h2 class="title" id="menu-title">Every plate, <em>cooked for your pickup day.</em></h2>
+          <p class="range" data-menu-range>The full menu</p>
+          <p>Most plates come with rice &amp; peas plus two sides. Extra meat $10, extra oxtail $12, sides on their own $5.</p>
+        </div>
+        <a class="btn gold" href="/order/">Build your plate</a>
+      </div>
+      <ul class="strip" data-menu-strip aria-label="Plates on the menu"></ul>
+      <noscript><p class="note"><a class="textlink" href="/order/">See every plate on the order page</a></p></noscript>
+      <p class="note">Swipe for more</p>
+    </div>
   </section>
 
-  <section class="home-owner" data-od-id="home-owner">
-    <div class="container home-owner-grid">
+  <section class="sec home-owner" id="about" data-od-id="home-owner" aria-labelledby="owner-title">
+    <div class="wrap">
       <img class="home-owner-photo" src="/assets/gallery/shantay-owner.webp" width="1200" height="1500" alt="Shantay Cole, owner of Island Delicacy" loading="lazy" decoding="async">
       <div>
-        <p class="eyebrow home-owner-eyebrow">Who cooks it</p>
-        <blockquote class="home-owner-quote">“Nothing held over, nothing frozen, nothing rushed.”</blockquote>
-        <p class="home-owner-who">Shantay Cole · owner</p>
-        <div class="home-facts">
-          <div><b>Taught by Mom</b><span>a love of cooking that started at home</span></div>
-          <div><b>Navy discipline</b><span>consistency from her years as a culinary specialist</span></div>
-          <div><b>San Diego</b><span>made here, by preorder</span></div>
+        <h2 class="eyebrow" id="owner-title">Who cooks it</h2>
+        <p class="quote">“Nothing held over, nothing frozen, nothing rushed.”</p>
+        <p class="who">Shantay Cole · owner</p>
+        <div class="facts">
+          <div><b>Taught by Mom</b><span>A love of cooking that started at home</span></div>
+          <div><b>Navy discipline</b><span>Consistency from her years as a culinary specialist</span></div>
+          <div><b>Small batch</b><span>Shopped and cooked for each order</span></div>
         </div>
-        <p class="home-owner-more"><a class="textlink" href="/about/">Read Shantay's story</a></p>
+        <a class="textlink" href="/about/">Read Shantay's story</a>
       </div>
     </div>
   </section>
 
-  <section class="container">
-    <div class="home-catering" data-od-id="home-catering">
-      <div>
-        <p class="eyebrow">Feeding a crowd</p>
-        <h2 class="section-title home-catering-title">Half and full trays for events.</h2>
-        <p>Trays feed 8–10 or 16–20. Book at least 48 hours ahead so the quote is fast and fair.</p>
+  <section class="cater" id="catering" data-od-id="home-catering" aria-labelledby="cater-title">
+    <figure><img src="/assets/home/trays-1200.webp" srcset="/assets/home/trays-700.webp 700w, /assets/home/trays-1200.webp 1200w" sizes="(max-width:920px) 100vw, 54vw" width="1200" height="800" alt="Catering trays of rice and peas, curry chicken, oxtail, cabbage and festival" loading="lazy" decoding="async"></figure>
+    <div class="panel">
+      <p class="eyebrow">Feeding a crowd</p>
+      <h2 class="title" id="cater-title">Half and full trays <em>for your next event.</em></h2>
+      <p>A half tray feeds 8–10. A full tray feeds 16–20. Book at least 48 hours ahead.</p>
+      <ul class="trays">
+        <li>Chicken trays <span>$120 / $220</span></li>
+        <li>Curry goat or escovitch fish <span>$180 / $340</span></li>
+        <li>Oxtail <span>$200 / $380</span></li>
+        <li>Custom spread, 3+ trays, setup included <span>from $600</span></li>
+      </ul>
+      <div class="cta3">
+        <a class="btn gold" href="/catering/" data-od-id="home-catering-pricing">See tray pricing</a>
+        <a class="btn line" href="sms:+19297424202">Text for a quote</a>
       </div>
-      <a class="btn btn-cream" href="/catering/" data-od-id="home-catering-pricing">See tray pricing</a>
-    </div>
-    <div class="home-proof" data-od-id="home-proof">
-      <div><p>“My husband kept raving about the Jamaican food he'd been eating at work… this is the best Jamaican food I've ever had.”</p><cite>— A customer's wife, now a customer</cite></div>
-      <div><p>“This was so good, thank you — everyone loved it.”</p><cite>— Catering client</cite></div>
-      <div><p>“It was fire.”</p><cite>— Every group chat, eventually</cite></div>
     </div>
   </section>
-</main><footer class="footer">
-  <div class="container">
-    <div><img src="/assets/brand/logo-gold.png" width="1575" height="1027" alt="Island Delicacy" loading="lazy"><p>Fresh Caribbean comfort food in San Diego, cooked by preorder only. Orders close 10 AM daily.</p></div>
-    <div><h3>Pages</h3><a href="/">Home</a><a href="/order/">Order</a><a href="/catering/">Catering</a><a href="/events/">Events</a><a href="/about/">About</a><a href="/faq/">FAQ / Contact</a><a href="/connect/">Menu &amp; links</a></div>
-    <div><h3>Contact</h3><a href="tel:+19297424202">(929) 742-4202</a><a href="sms:+19297424202">Text to request coming-soon items</a><a href="mailto:islanddelicacy@outlook.com">islanddelicacy@outlook.com</a></div>
+
+  <section class="sec" aria-labelledby="kitchen-title">
+    <div class="wrap">
+      <div class="head">
+        <div>
+          <p class="eyebrow">From the kitchen</p>
+          <h2 class="title" id="kitchen-title">Small batch, <em>start to finish.</em></h2>
+        </div>
+        <a class="btn line" href="https://www.instagram.com/islanddelicacyllc">Follow on Instagram</a>
+      </div>
+      <div class="gallery">
+        <figure class="g1"><img src="/assets/home/kitchen-pot.webp" width="800" height="534" alt="Oxtail braising in a cast iron pot" loading="lazy" decoding="async"></figure>
+        <figure class="g2"><img src="/assets/home/kitchen-grill.webp" width="800" height="534" alt="Jerk chicken on the grill" loading="lazy" decoding="async"></figure>
+        <figure class="g3"><img src="/assets/home/kitchen-plantains.webp" width="800" height="534" alt="Sweet plantains frying in a skillet" loading="lazy" decoding="async"></figure>
+        <figure class="g4"><img src="/assets/home/kitchen-plate.webp" width="800" height="534" alt="Oxtail plate in a takeout box" loading="lazy" decoding="async"></figure>
+        <figure class="g5"><img src="/assets/home/kitchen-pickup.webp" width="800" height="534" alt="Takeout bag and boxes ready for pickup" loading="lazy" decoding="async"></figure>
+        <figure class="g6"><img src="/assets/home/kitchen-takeout.webp" width="800" height="534" alt="Barbecue chicken, plantains and cabbage in a takeout box" loading="lazy" decoding="async"></figure>
+      </div>
+    </div>
+  </section>
+
+  <section class="sec home-proof" data-od-id="home-proof" aria-labelledby="rv-title">
+    <div class="wrap">
+      <p class="eyebrow">What people say</p>
+      <h2 class="title" id="rv-title">In their <em>own words.</em></h2>
+      <div class="rv">
+        <figure><blockquote><p>My husband kept raving about the Jamaican food he'd been eating at work… this is the best Jamaican food I've ever had.</p></blockquote><figcaption>A customer's wife, now a customer</figcaption></figure>
+        <figure><blockquote><p>This was so good, thank you — everyone loved it.</p></blockquote><figcaption>Catering client</figcaption></figure>
+      </div>
+    </div>
+  </section>
+
+  <section class="sec find" aria-labelledby="contact-title">
+    <h2 class="sr-only" id="contact-title">Contact</h2>
+    <div class="wrap">
+      <div>
+        <p class="eyebrow">Questions or a big order?</p>
+        <a class="big" href="tel:+19297424202">(929) 742-4202</a>
+        <p>Call or text, or email us.</p>
+        <a href="mailto:islanddelicacy@outlook.com">islanddelicacy@outlook.com</a>
+      </div>
+      <div>
+        <h3>Pickup</h3>
+        <p>San Diego. Orders close at 10 AM for next-day pickup. We text you on pickup day to set your time.</p>
+        <a href="/faq/">Questions? Read the FAQ</a>
+      </div>
+      <div>
+        <h3>Follow along</h3>
+        <a href="https://www.instagram.com/islanddelicacyllc">Instagram @islanddelicacyllc</a>
+        <a href="https://www.tiktok.com/@islanddelicacyllc">TikTok @islanddelicacyllc</a>
+        <a href="/events/">Pop-ups and events</a>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer class="footer">
+  <div class="wrap">
+    <img src="/assets/home/logo-gold.webp" width="320" height="209" alt="Island Delicacy" loading="lazy" decoding="async">
+    <nav aria-label="Footer">
+      <a href="/order/">Order</a><a href="/catering/">Catering</a><a href="/events/">Events</a><a href="/about/">About</a><a href="/faq/">FAQ / Contact</a><a href="/connect/">Menu &amp; links</a>
+    </nav>
+    <small>Fresh Caribbean comfort food in San Diego, cooked by preorder only. Orders close 10 AM daily.</small>
   </div>
 </footer>
+
+<div class="obar">
+  <a class="btn line" href="tel:+19297424202">Call</a>
+  <a class="btn gold" href="/order/"><span>Order for <span data-earliest-label>tomorrow</span></span></a>
+</div>
 <script src="/js/menu.js?v=20260818-square-production-1"></script>
-<script src="/js/main.js?v=20260901-homepage-board-1"></script>
+<script src="/js/main.js?v=20261121-home-redesign"></script>
 </body>
 </html>
