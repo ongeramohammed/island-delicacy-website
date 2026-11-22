@@ -107,6 +107,30 @@ function navInit(){
   btn.addEventListener('click',()=>{ links.classList.toggle('open'); document.body.classList.toggle('menu-open', links.classList.contains('open')); });
 }
 
+// Homepage menu strip (2026-11-21 redesign). Like the board below, every name,
+// price, note and photo comes from window.ISLAND_MENU, so the homepage can never
+// drift from the order page. Cards use 480px square copies of the same photos
+// (/assets/home/menu/<file>), rendered 1:1. Best seller / chef pick become a flag.
+function hydrateMenuStrip(){
+  const wrap=document.querySelector('[data-menu-strip]'); if(!wrap || !window.ISLAND_MENU) return;
+  const leadIds=['oxtail','jerk','curry-goat','oxtail-rasta-pasta'];
+  const items=[...leadIds.map(id=>window.ISLAND_MENU.find(item=>item.id===id)).filter(Boolean),
+    ...window.ISLAND_MENU.filter(item=>!leadIds.includes(item.id))];
+  wrap.innerHTML = items.map(item => {
+    const m=/^(best seller|chef pick)(?:,\s*)?(.*)$/i.exec(item.note||'');
+    const flag=m ? m[1].replace(/\b\w/g,c=>c.toUpperCase()) : '';
+    const rest=m ? m[2] : (item.note||'');
+    const note=rest ? rest.charAt(0).toUpperCase()+rest.slice(1) : '';
+    const thumb=item.image.replace('/assets/menu/','/assets/home/menu/');
+    return `<li><a class="plate" href="/order/" aria-label="Order ${escapeHtml(item.name)}, $${item.price}">${flag?`<span class="plate-flag">${escapeHtml(flag)}</span>`:''}<img src="${thumb}" alt="${escapeHtml(item.name)} plate" width="480" height="480" loading="lazy" decoding="async"><span class="plate-body"><h3><span class="plate-name">${escapeHtml(item.name)}</span><span class="plate-price">$${item.price}</span></h3>${note?`<span class="plate-note">${escapeHtml(note)}</span>`:''}</span></a></li>`;
+  }).join('');
+  const range=document.querySelector('[data-menu-range]');
+  if(range){
+    const prices=window.ISLAND_MENU.map(item=>item.price);
+    range.textContent=`${window.ISLAND_MENU.length} plates · $${Math.min(...prices)}–$${Math.max(...prices)}`;
+  }
+}
+
 // Homepage plate board. Every name, price, note and photo comes from
 // window.ISLAND_MENU, so the homepage can never drift from the order page.
 // The photos are square 1400x1400 and are rendered 1:1 — never re-cropped.
@@ -624,4 +648,4 @@ function cateringInit(){
 }
 
 function escapeHtml(str){ return String(str).replace(/[&<>'"]/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c])); }
-document.addEventListener('DOMContentLoaded',()=>{ updateCutoff(); setInterval(updateCutoff,60000); navInit(); hydratePreviewCards(); orderInit(); cateringInit(); });
+document.addEventListener('DOMContentLoaded',()=>{ updateCutoff(); setInterval(updateCutoff,60000); navInit(); hydrateMenuStrip(); hydratePreviewCards(); orderInit(); cateringInit(); });
